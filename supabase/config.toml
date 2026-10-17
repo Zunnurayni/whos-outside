@@ -1,0 +1,14 @@
+# Minimal Supabase CLI config.
+# Run `supabase init` to regenerate a full one, or use this as a starting point.
+# Docs: https://supabase.com/docs/guides/cli/config
+project_id = "whos-outside"
+
+[db]
+port = 54322
+major_version = 15
+
+[api]
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
