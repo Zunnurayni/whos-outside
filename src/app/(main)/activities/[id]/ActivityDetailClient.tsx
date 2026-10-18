@@ -2,13 +2,24 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import {
+  Clock,
+  MapPin,
+  Users,
+  ShieldCheck,
+  Sparkles,
+  Share2,
+  CheckCircle2,
+  Wallet,
+  Flame,
+  ArrowLeft,
+} from "lucide-react";
 import type { ActivityView, Person } from "@/lib/types";
-import { categoryEmoji, categoryLabel, formatNaira } from "@/lib/categories";
+import { categoryLabel, formatNaira } from "@/lib/categories";
+import { personById } from "@/lib/data/sample";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
 import { requestToJoin, leaveActivity } from "@/lib/actions";
 
@@ -28,13 +39,13 @@ export function ActivityDetailClient({
   const joined = crew.includes(currentUserId);
   const sl = a.max - crew.length;
   const pct = Math.min(100, Math.round((crew.length / a.max) * 100));
+  const isLockedIn = crew.length >= a.min;
 
   const join = () => {
-    // optimistic
     setCrew((c) => (c.includes(currentUserId) ? c : [...c, currentUserId]));
     startTransition(async () => {
       const res = await requestToJoin(a.id);
-      if (res.message === "demo") show(`Request sent to ${host.name} 🎉`, "👍");
+      if (res.message === "demo") show(`Request sent to ${host.name} 🎉 You're in line!`, "👍");
       else if (res.ok) show(res.message, "👍");
       else {
         setCrew((c) => c.filter((p) => p !== currentUserId));
@@ -42,6 +53,7 @@ export function ActivityDetailClient({
       }
     });
   };
+
   const leave = () => {
     setCrew((c) => c.filter((p) => p !== currentUserId));
     startTransition(async () => {
@@ -55,154 +67,257 @@ export function ActivityDetailClient({
     });
   };
 
-  const seats: JSX.Element[] = crew.map((p) => <Avatar key={p} personId={p} size={42} />);
-  for (let i = crew.length; i < Math.min(a.max, crew.length + 2); i++) {
-    seats.push(
-      <div
-        key={`seat-${i}`}
-        className="-ml-[9px] grid h-[42px] w-[42px] place-items-center rounded-full border-2 border-dashed border-line bg-bg text-lg text-fg-faint"
-      >
-        ＋
-      </div>
-    );
-  }
+  const handleShare = () => {
+    show("Snapchat sticker card copied! Deep-links straight to this plan 👻", "⤴");
+  };
 
   return (
     <>
-      <TopBar variant="detail" />
+      <TopBar
+        variant="detail"
+        title={a.title}
+        subtitle={`${a.area} · ${a.day}`}
+        onShare={handleShare}
+      />
 
-      {/* hero */}
+      {/* Atmospheric Header Banner */}
       <div
-        className="relative flex min-h-[200px] flex-col justify-end overflow-hidden rounded-b-lg p-5 pb-[22px] text-white"
-        style={{ background: "linear-gradient(140deg, var(--violet), #8b6cf5)" }}
+        className={`relative flex min-h-[200px] flex-col justify-end overflow-hidden px-5 pb-6 text-white bg-gradient-to-br ${
+          a.themeGradient || "from-violet-950 via-neutral-900 to-black"
+        }`}
       >
         <div
-          className="absolute inset-0 opacity-45"
+          className="pointer-events-none absolute inset-0 opacity-40"
           style={{
             background:
-              "radial-gradient(circle at 85% 20%, rgba(255,212,0,.4), transparent 40%), radial-gradient(circle at 10% 90%, rgba(255,255,255,.12), transparent 50%)",
+              "radial-gradient(circle at 85% 20%, rgba(255,212,0,.45), transparent 45%), radial-gradient(circle at 15% 85%, rgba(108,76,240,.3), transparent 50%)",
           }}
         />
-        <Pill variant="ghost" className="relative self-start">
-          {categoryEmoji(a.category)} {categoryLabel(a.category)}
-        </Pill>
-        <h1 className="relative mt-2.5 text-[1.6rem] text-white">{a.title}</h1>
-        <div className="relative mt-3 flex flex-wrap gap-3.5 text-[0.86rem] text-white/95">
-          <span>📍 {a.area}, {a.city}</span>
-          <span>🗓️ {a.day}, {a.time}</span>
+
+        <div className="relative flex items-center justify-between">
+          <span className="rounded-full bg-black/40 backdrop-blur-md px-3 py-1 text-xs font-bold text-white/95">
+            {a.emoji} {categoryLabel(a.category)}
+          </span>
+          {sl <= 2 && (
+            <span className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-xs font-extrabold text-accent-ink shadow-sm">
+              <Flame className="h-3 w-3 fill-current" /> Only {sl} left
+            </span>
+          )}
+        </div>
+
+        <h1 className="relative mt-3 font-display text-[1.65rem] font-bold leading-tight text-white">
+          {a.title}
+        </h1>
+
+        <div className="relative mt-2.5 flex flex-wrap items-center gap-3 text-[0.85rem] text-white/90">
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5 text-accent" />
+            {a.venue}, {a.area}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5 text-accent" />
+            {a.day}, {a.time}
+          </span>
         </div>
       </div>
 
-      <Pad>
-        <div className="mt-[18px] grid grid-cols-2 gap-[11px]">
-          <InfoBox label="When" value={a.day} sub={`${a.time} · ${a.duration}`} />
-          <InfoBox label="Cost / person" value={formatNaira(a.cost)} sub={a.cost === 0 ? "No charge" : "Split on arrival"} />
-          <InfoBox label="Venue" value={a.venue} small />
-          <InfoBox label="Group size" value={`${a.min}–${a.max}`} sub={`${crew.length} confirmed`} />
+      <Pad className="pt-4">
+        {/* Quick Vibe Badges */}
+        {a.vibes && a.vibes.length > 0 && (
+          <div className="flex flex-wrap gap-2 pb-1">
+            {a.vibes.map((v) => (
+              <span
+                key={v}
+                className="rounded-lg bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-fg-soft"
+              >
+                #{v}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* 4-Box Key Stats Grid */}
+        <div className="mt-3 grid grid-cols-2 gap-2.5">
+          <StatBox
+            icon={Clock}
+            label="Timing"
+            main={`${a.day}, ${a.time}`}
+            sub={`Duration: ${a.duration}`}
+          />
+          <StatBox
+            icon={Wallet}
+            label="Cost / Person"
+            main={a.cost === 0 ? "Free" : formatNaira(a.cost)}
+            sub={a.cost === 0 ? "No fee required" : "Split at venue"}
+          />
+          <StatBox
+            icon={MapPin}
+            label="Public Venue"
+            main={a.venue}
+            sub={`${a.area}, ${a.city}`}
+          />
+          <StatBox
+            icon={Users}
+            label="Crew Size"
+            main={`${crew.length} of ${a.max}`}
+            sub={isLockedIn ? "Min reached ✓" : `Needs ${a.min - crew.length} more`}
+          />
         </div>
 
-        {/* host */}
-        <div className="mt-[18px] flex items-center gap-3 rounded-md border border-line bg-surface p-[15px]">
-          <Avatar personId={a.hostId} size={46} />
-          <div className="min-w-0 flex-1">
-            <div className="font-bold">
-              {host.name}{" "}
-              {isHost && <Pill variant="cat" className="ml-1">You</Pill>}
-            </div>
-            <div className="text-[0.78rem] text-fg-soft">
-              Organiser · {isHost ? "your plan" : "usually hosts food & hangout"}
+        {/* Host Profile Card */}
+        <div className="mt-4 flex items-center justify-between rounded-2xl border border-line bg-surface p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Avatar personId={a.hostId} size={48} showStatus />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-display font-bold text-fg">{host.name}</span>
+                {isHost && (
+                  <span className="rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-accent-ink">
+                    You
+                  </span>
+                )}
+              </div>
+              <div className="text-[0.76rem] text-fg-soft">
+                {host.vibe || "Plan organiser · Verified community member"}
+              </div>
             </div>
           </div>
-          {!isHost && (
-            <Button variant="ghostline" size="sm" full={false}>
-              View
-            </Button>
-          )}
         </div>
 
-        <div className="mb-2.5 mt-[22px] flex items-baseline justify-between">
-          <h2 className="text-[1.05rem]">About this plan</h2>
+        {/* About This Plan */}
+        <div className="mt-5">
+          <h2 className="font-display text-[1.05rem] font-bold text-fg">
+            About this plan
+          </h2>
+          <p className="mt-2 text-[0.92rem] leading-relaxed text-fg-soft">
+            {a.description}
+          </p>
         </div>
-        <p className="text-[0.92rem] text-fg-soft">{a.description}</p>
 
-        {/* crew */}
-        <div className="mt-5 flex items-center justify-between">
+        {/* Crew Progress & Seating */}
+        <div className="mt-6 rounded-2xl border border-line bg-surface p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[0.72rem] font-bold uppercase tracking-wider text-fg-faint">
+                Crew Attendance
+              </div>
+              <div className="mt-1 font-display text-[1.2rem] font-bold text-fg">
+                {crew.length} <span className="text-fg-faint">/ {a.max} joined</span>
+              </div>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold ${
+                isLockedIn ? "bg-good/15 text-good" : "bg-warn/15 text-warn"
+              }`}
+            >
+              {isLockedIn ? "✓ Plan is a go" : `Needs ${a.min - crew.length} more`}
+            </span>
+          </div>
+
+          {/* Micro Progress Bar */}
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                isLockedIn ? "bg-good" : "bg-accent"
+              }`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+
+          {/* Seating Row */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {crew.map((id) => (
+              <div key={id} className="flex items-center gap-1.5 rounded-full bg-surface-2 pr-3 pl-1 py-1">
+                <Avatar personId={id} size={28} />
+                <span className="text-xs font-bold text-fg">
+                  {id === currentUserId ? "You" : personById(id).name.split(" ")[0]}
+                </span>
+              </div>
+            ))}
+            {sl > 0 && (
+              <span className="flex items-center justify-center rounded-full border border-dashed border-line px-3 py-1.5 text-xs font-semibold text-fg-faint">
+                +{sl} spots open
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Safety & Meeting Privacy Note */}
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-line/60 bg-surface-2/60 p-3.5 text-[0.8rem] text-fg-soft">
+          <ShieldCheck className="h-5 w-5 text-good shrink-0 mt-0.5" />
           <div>
-            <div className="text-[0.7rem] font-bold uppercase tracking-wider text-fg-faint">The crew</div>
-            <div className="mt-2 flex items-center">{seats}</div>
-          </div>
-          <div className="text-right">
-            <div className="font-display text-[1.3rem] font-bold">
-              {crew.length}
-              <span className="text-fg-faint">/{a.max}</span>
-            </div>
-            <div className="text-[0.72rem] text-fg-soft">{sl > 0 ? `${sl} spots open` : "Crew full"}</div>
-          </div>
-        </div>
-        <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-2">
-          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
-        </div>
-        <div className="mt-[7px] text-[0.74rem] text-fg-soft">
-          {crew.length >= a.min
-            ? "✅ Minimum reached — this plan is a go"
-            : `Needs ${a.min - crew.length} more to lock in (min ${a.min})`}
-        </div>
-
-        <div className="mt-4 flex items-start gap-2.5 rounded-sm bg-surface-2 p-3 text-[0.8rem] text-fg-soft">
-          <span className="text-[17px]">🛡️</span>
-          <div>
-            Meet at the public venue, not anyone&apos;s address. Exact meeting pin is shared with the crew only
-            after it locks. You can leave or report anytime.
+            <strong className="text-fg">Safe Meetup Guarantee:</strong> Meetups happen strictly at public spots.
+            The exact table or meeting point is revealed 45 min before start to locked-in members only.
           </div>
         </div>
 
-        {/* sticky CTA */}
+        {/* Sticky Action Footer */}
         <div
-          className="sticky bottom-[92px] mt-6 pb-1.5 pt-3.5"
-          style={{ background: "linear-gradient(0deg, var(--bg) 70%, transparent)" }}
+          className="sticky bottom-[78px] mt-6 flex flex-col gap-2 rounded-2xl bg-surface/95 backdrop-blur-md p-3 border border-line shadow-xl"
         >
           {isHost ? (
-            <Link href="/crews">
-              <Button variant="violet">Manage crew & requests</Button>
+            <Link
+              href="/crews"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet py-3.5 text-[0.92rem] font-bold text-white shadow-md active:scale-95 transition-transform"
+            >
+              <Users className="h-4 w-4" />
+              Manage Crew & Requests
             </Link>
           ) : joined ? (
-            <Button variant="secondary" onClick={leave} disabled={pending}>
-              ✓ You&apos;re in · tap to leave
-            </Button>
+            <button
+              onClick={leave}
+              disabled={pending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface-2 py-3.5 text-[0.92rem] font-bold text-fg-soft active:scale-95 transition-transform disabled:opacity-60"
+            >
+              <CheckCircle2 className="h-4 w-4 text-good" />
+              You&apos;re in this crew · Tap to leave
+            </button>
           ) : (
-            <Button onClick={join} disabled={pending}>
-              Request to join · {formatNaira(a.cost)}
-            </Button>
+            <button
+              onClick={join}
+              disabled={pending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-[0.95rem] font-extrabold text-accent-ink shadow-md active:scale-95 transition-transform disabled:opacity-60"
+            >
+              <span>Request to Join</span>
+              <span aria-hidden="true">·</span>
+              <span>{a.cost === 0 ? "Free" : formatNaira(a.cost)}</span>
+            </button>
           )}
-          <Button
-            variant="ghostline"
-            className="mt-[9px]"
-            onClick={() => show("Snapchat share card generated (deep-links back here) 👻", "⤴")}
+
+          <button
+            onClick={handleShare}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface py-2.5 text-[0.84rem] font-bold text-fg hover:bg-surface-2 active:scale-95 transition-transform"
           >
-            👻 Share to Snapchat
-          </Button>
+            <span>👻 Share to Snapchat Story</span>
+          </button>
         </div>
       </Pad>
     </>
   );
 }
 
-function InfoBox({
+function StatBox({
+  icon: Icon,
   label,
-  value,
+  main,
   sub,
-  small = false,
 }: {
+  icon: any;
   label: string;
-  value: string;
-  sub?: string;
-  small?: boolean;
+  main: string;
+  sub: string;
 }) {
   return (
-    <div className="rounded-sm border border-line bg-surface p-[13px]">
-      <div className="text-[0.68rem] font-bold uppercase tracking-wide text-fg-faint">{label}</div>
-      <div className={`mt-1 font-display font-bold ${small ? "text-[0.9rem]" : "text-[0.98rem]"}`}>{value}</div>
-      {sub && <div className="mt-0.5 text-[0.82rem] text-fg-soft">{sub}</div>}
+    <div className="flex flex-col rounded-xl border border-line bg-surface p-3 shadow-xs">
+      <div className="flex items-center gap-1.5 text-[0.7rem] font-bold uppercase tracking-wider text-fg-faint">
+        <Icon className="h-3 w-3 text-violet" />
+        {label}
+      </div>
+      <div className="mt-1 font-display text-[0.95rem] font-bold text-fg truncate">
+        {main}
+      </div>
+      <div className="mt-0.5 text-[0.74rem] text-fg-soft truncate">{sub}</div>
     </div>
   );
 }

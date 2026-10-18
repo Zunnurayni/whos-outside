@@ -24,6 +24,9 @@ export interface Person {
   initials: string;
   color: string;
   interests?: string[];
+  vibe?: string;
+  currentSpot?: string;
+  isOutside?: boolean;
 }
 
 export interface ActivityView {
@@ -47,6 +50,8 @@ export interface ActivityView {
   /** stylised map coordinate as a percentage of the canvas */
   mapX: number;
   mapY: number;
+  vibes?: string[];
+  themeGradient?: string;
 }
 
 export interface EventView {

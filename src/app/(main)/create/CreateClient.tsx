@@ -2,21 +2,26 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Sparkles, MapPin, Calendar, Clock, Users, Wallet, ShieldCheck } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
-import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { createActivity } from "@/lib/actions";
 
-const field = "w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-[0.95rem] text-fg";
-const label = "mb-[7px] block text-[0.8rem] font-bold text-fg-soft";
+const PRESETS = [
+  { emoji: "🍢", title: "Suya run at Jimeta Market", cat: "food", cost: 3000, size: 5 },
+  { emoji: "⚽", title: "Casual 5-a-side soccer", cat: "sports", cost: 1000, size: 8 },
+  { emoji: "🌅", title: "Sunset walk by River Benue", cat: "outdoors", cost: 0, size: 6 },
+  { emoji: "🎧", title: "Rooftop aux & chill beats", cat: "music", cost: 1500, size: 6 },
+  { emoji: "💻", title: "BCH Hub build & coffee", cat: "tech", cost: 0, size: 8 },
+];
 
 // Turn the "Today / Tomorrow / weekend" select + a time string into an ISO date.
 function toIso(dateChoice: string, time: string): string {
   const d = new Date();
   if (dateChoice === "Tomorrow") d.setDate(d.getDate() + 1);
-  else if (dateChoice === "This weekend") d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7));
+  else if (dateChoice.startsWith("This")) d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7));
   const m = time.trim().match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
   let hours = 19;
   let mins = 0;
@@ -35,9 +40,20 @@ export function CreateClient() {
   const router = useRouter();
   const { show } = useToast();
   const [cat, setCat] = useState("food");
-  const [group, setGroup] = useState(4);
+  const [group, setGroup] = useState(5);
   const [title, setTitle] = useState("");
+  const [venue, setVenue] = useState("");
+  const [cost, setCost] = useState("");
+  const [time, setTime] = useState("7:30 PM");
   const [pending, startTransition] = useTransition();
+
+  const applyPreset = (p: typeof PRESETS[0]) => {
+    setTitle(p.title);
+    setCat(p.cat);
+    setCost(p.cost > 0 ? String(p.cost) : "");
+    setGroup(p.size);
+    show(`Loaded "${p.title}" preset ⚡`, "✨");
+  };
 
   const val = (id: string) =>
     (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
@@ -45,7 +61,7 @@ export function CreateClient() {
 
   const post = () => {
     if (!title.trim()) {
-      show("Give your plan a title first", "✏️");
+      show("Give your plan a title first ✏️", "⚠️");
       return;
     }
     const joinSel = val("c-join");
@@ -53,9 +69,9 @@ export function CreateClient() {
       title: title.trim(),
       description: val("c-desc"),
       category: cat,
-      venueName: val("c-venue"),
-      startsAt: toIso(val("c-date") || "Today", val("c-time") || "7:30 PM"),
-      cost: Number((val("c-cost") || "0").replace(/[^\d.]/g, "")) || 0,
+      venueName: venue,
+      startsAt: toIso(val("c-date") || "Today", time || "7:30 PM"),
+      cost: Number((cost || "0").replace(/[^\d.]/g, "")) || 0,
       maxParticipants: group,
       minParticipants: Math.min(3, group),
       joinRule: joinSel.startsWith("Invite") ? "invite" : joinSel.startsWith("Approve") ? "approve" : "open",
@@ -63,150 +79,215 @@ export function CreateClient() {
     startTransition(async () => {
       const res = await createActivity(payload);
       if (res.message === "demo") {
-        show("Plan posted — it's live on the map 👻", "🎉");
+        show("Plan dropped! Your crew radar is live 👻", "🎉");
       } else if (res.ok) {
         show(res.message, "🎉");
       } else {
         show(res.message, "⚠️");
         return;
       }
-      setTimeout(() => router.push("/discover"), 900);
+      setTimeout(() => router.push("/discover"), 800);
     });
   };
 
+  const inputClass =
+    "w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-[0.95rem] text-fg placeholder:text-fg-faint focus:border-violet focus:outline-none focus:ring-1 focus:ring-violet transition-colors";
+  const labelClass = "mb-1.5 flex items-center gap-1.5 text-[0.8rem] font-bold text-fg-soft";
+
   return (
     <>
-      <TopBar variant="title" title="Create" />
-      <Pad>
-        <div className="pb-1.5 pt-[18px]">
-          <h1 className="text-[1.7rem]">Start a plan</h1>
-          <p className="mt-[5px] text-[0.92rem] text-fg-soft">
-            Post what you want to do. People nearby request to join.
+      <TopBar variant="title" title="Drop a Plan" />
+      <Pad className="pb-10">
+        <div className="pt-4 pb-2">
+          <h1 className="font-display text-[1.65rem] font-bold text-fg leading-tight">
+            Who wants to pull up? 👻
+          </h1>
+          <p className="mt-1 text-[0.88rem] text-fg-soft">
+            Drop an activity in Yola. People nearby request to join.
           </p>
         </div>
 
-        <div className="mt-4">
-          <label className={label} htmlFor="c-title">
-            What&apos;s the plan?
+        {/* 1-Tap Quick Vibe Presets */}
+        <div className="mt-3">
+          <span className="flex items-center gap-1.5 text-[0.74rem] font-bold uppercase tracking-wider text-violet">
+            <Sparkles className="h-3.5 w-3.5" /> Quick 1-Tap Presets
+          </span>
+          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+            {PRESETS.map((p) => (
+              <button
+                key={p.title}
+                onClick={() => applyPreset(p)}
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-fg transition-all active:scale-95 hover:border-violet/50 hover:bg-surface-2"
+              >
+                <span>{p.emoji}</span>
+                <span>{p.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan Title */}
+        <div className="mt-5">
+          <label className={labelClass} htmlFor="c-title">
+            What&apos;s the outing?
           </label>
           <input
             id="c-title"
-            className={field}
+            className={inputClass}
             placeholder="e.g. Suya run at Jimeta market"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
+        {/* Category Selector */}
         <div className="mt-4">
-          <span className={label}>Category</span>
+          <span className={labelClass}>Category</span>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.filter((c) => c.id !== "all").map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setCat(c.id)}
-                className={`inline-flex gap-1.5 rounded-full border px-3 py-[9px] text-[0.83rem] font-semibold ${
-                  cat === c.id ? "border-violet bg-violet text-white" : "border-line bg-surface text-fg-soft"
-                }`}
-              >
-                {c.emoji} {c.label}
-              </button>
-            ))}
+            {CATEGORIES.filter((c) => c.id !== "all").map((c) => {
+              const active = cat === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setCat(c.id)}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
+                    active
+                      ? "border-violet bg-violet text-white shadow-xs"
+                      : "border-line bg-surface text-fg-soft hover:text-fg"
+                  }`}
+                >
+                  <span>{c.emoji}</span>
+                  <span>{c.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
+        {/* Description */}
         <div className="mt-4">
-          <label className={label} htmlFor="c-desc">
+          <label className={labelClass} htmlFor="c-desc">
             Describe it
           </label>
           <textarea
             id="c-desc"
-            className={`${field} min-h-[84px] resize-y`}
+            className={`${inputClass} min-h-[84px] resize-y`}
             placeholder="Pace, who it's for, what to bring, where you'll meet..."
           />
         </div>
 
+        {/* Public Venue */}
         <div className="mt-4">
-          <label className={label} htmlFor="c-venue">
-            Venue (public place)
+          <label className={labelClass} htmlFor="c-venue">
+            <MapPin className="h-3.5 w-3.5 text-violet" />
+            Public Meeting Venue
           </label>
-          <input id="c-venue" className={field} placeholder="Search Yola venues..." />
-          <p className="mt-1.5 text-[0.74rem] text-fg-faint">
-            🔒 Only the public venue shows publicly — never your home address.
-          </p>
+          <input
+            id="c-venue"
+            className={inputClass}
+            placeholder="e.g. Jimeta Modern Market strip, Yola"
+            value={venue}
+            onChange={(e) => setVenue(e.target.value)}
+          />
+          <div className="mt-1.5 flex items-center gap-1.5 text-[0.74rem] text-fg-faint">
+            <ShieldCheck className="h-3.5 w-3.5 text-good" />
+            Only public spots are shown — never your home or private coordinates.
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-[11px]">
-          <div className="mt-4">
-            <label className={label} htmlFor="c-date">
-              Date
+        {/* Date & Time */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass} htmlFor="c-date">
+              <Calendar className="h-3.5 w-3.5 text-violet" />
+              Day
             </label>
-            <select id="c-date" className={field}>
+            <select id="c-date" className={inputClass}>
               <option>Today</option>
               <option>Tomorrow</option>
-              <option>This weekend</option>
-              <option>Pick a date…</option>
+              <option>This Friday</option>
+              <option>This Saturday</option>
+              <option>This Sunday</option>
             </select>
           </div>
-          <div className="mt-4">
-            <label className={label} htmlFor="c-time">
-              Start time
+          <div>
+            <label className={labelClass} htmlFor="c-time">
+              <Clock className="h-3.5 w-3.5 text-violet" />
+              Start Time
             </label>
-            <input id="c-time" className={field} defaultValue="7:30 PM" />
+            <input
+              id="c-time"
+              className={inputClass}
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-[11px]">
-          <div className="mt-4">
-            <label className={label} htmlFor="c-cost">
-              Cost / person (₦)
+        {/* Cost & Group Size */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass} htmlFor="c-cost">
+              <Wallet className="h-3.5 w-3.5 text-violet" />
+              Cost / Person (₦)
             </label>
-            <input id="c-cost" className={field} placeholder="0 for free" />
+            <input
+              id="c-cost"
+              className={inputClass}
+              placeholder="0 for free"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+            />
           </div>
-          <div className="mt-4">
-            <span className={label}>Group size</span>
-            <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-2.5 py-[7px]">
+          <div>
+            <span className={labelClass}>
+              <Users className="h-3.5 w-3.5 text-violet" />
+              Crew Limit
+            </span>
+            <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2">
               <button
                 onClick={() => setGroup((g) => Math.max(2, g - 1))}
-                className="grid h-[34px] w-[34px] place-items-center rounded-[9px] bg-surface-2 text-[19px] font-bold"
+                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
                 aria-label="Fewer"
               >
                 −
               </button>
-              <span className="font-display text-[1.1rem] font-bold">{group}</span>
+              <span className="font-display text-[1.1rem] font-bold text-fg tabular-nums">
+                {group}
+              </span>
               <button
                 onClick={() => setGroup((g) => Math.min(20, g + 1))}
-                className="grid h-[34px] w-[34px] place-items-center rounded-[9px] bg-surface-2 text-[19px] font-bold"
+                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
                 aria-label="More"
               >
-                ＋
+                +
               </button>
             </div>
           </div>
         </div>
 
+        {/* Who can join */}
         <div className="mt-4">
-          <label className={label} htmlFor="c-join">
+          <label className={labelClass} htmlFor="c-join">
             Who can join?
           </label>
-          <select id="c-join" className={field}>
+          <select id="c-join" className={inputClass}>
             <option>Anyone can request</option>
             <option>Approve each request</option>
             <option>Invite only (share a link)</option>
           </select>
         </div>
 
-        <div className="mt-6">
-          <Button onClick={post} disabled={pending}>
-            {pending ? "Posting…" : "Post plan 👻"}
-          </Button>
+        {/* Submit Button */}
+        <div className="mt-7">
+          <button
+            onClick={post}
+            disabled={pending}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-4 font-display text-[1.05rem] font-extrabold text-accent-ink shadow-lg shadow-accent/20 active:scale-98 transition-transform disabled:opacity-60"
+          >
+            <span>{pending ? "Posting…" : "Post Plan to Radar 👻"}</span>
+          </button>
         </div>
-        <p className="mt-[18px] px-5 text-center text-[0.76rem] text-fg-faint">
-          In the live app this saves to your account and appears on the map instantly.{" "}
-          <span className="inline-block rounded-md bg-surface-2 px-2 py-[3px] text-[0.68rem] font-bold uppercase tracking-wide text-fg-faint">
-            Demo — not saved
-          </span>
-        </p>
       </Pad>
     </>
   );

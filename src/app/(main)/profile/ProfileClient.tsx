@@ -1,188 +1,289 @@
 "use client";
 
 import { useState } from "react";
+import { Sparkles, MapPin, Award, ShieldCheck, Flame, Zap, Share2, Check } from "lucide-react";
 import { ME } from "@/lib/data/sample";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
-import { Button } from "@/components/ui/Button";
-import { Pill } from "@/components/ui/Pill";
+import { useToast } from "@/components/ui/Toast";
 import { signOut } from "@/lib/actions";
 
 const BADGES = [
-  { e: "🎉", l: "First outing", on: true },
-  { e: "🔥", l: "5 plans", on: true },
-  { e: "👑", l: "Host x3", on: true },
-  { e: "🌙", l: "Night owl", on: true },
-  { e: "📸", l: "Memory maker", on: false },
-  { e: "🤝", l: "Connector", on: false },
-  { e: "⭐", l: "Top rated", on: false },
-  { e: "🗺️", l: "Explorer", on: false },
+  { e: "🎉", l: "First Outing", on: true, desc: "Broke the ice" },
+  { e: "🔥", l: "5 Plans Hosted", on: true, desc: "Community anchor" },
+  { e: "🛡️", l: "100% Show-up", on: true, desc: "Never flaked once" },
+  { e: "🍢", l: "Suya Master", on: true, desc: "Knows Jimeta market" },
+  { e: "🌙", l: "Night Owl", on: true, desc: "Late rooftop regular" },
+  { e: "🤝", l: "Connector", on: false, desc: "Meet 50+ people" },
+  { e: "📸", l: "Storyteller", on: false, desc: "Shared on Snapchat" },
+  { e: "🗺️", l: "Yola Explorer", on: false, desc: "Visited all zones" },
 ];
 
 const PAST = [
-  { e: "🍲", t: "Suya night at Jimeta", s: "2 weeks ago · 5 people", r: "⭐ 5.0" },
-  { e: "⚽", t: "5-a-side at Pologround", s: "Last month · 8 people", r: "⭐ 4.8" },
-  { e: "💻", t: "BCH Hub build session", s: "Last month · 11 people", r: "⭐ 5.0" },
+  { e: "🍢", t: "Suya night at Jimeta Market", s: "2 weeks ago · 5 people", r: "⭐ 5.0" },
+  { e: "⚽", t: "5-a-side at Pologround Astro", s: "Last month · 8 people", r: "⭐ 4.9" },
+  { e: "💻", t: "BCH Hub open build session", s: "Last month · 11 people", r: "⭐ 5.0" },
 ];
 
 export function ProfileClient({
   live = false,
-  displayName = "Nurain",
-  handle = "@Nurain_Dev",
+  displayName = ME.name,
+  handle = ME.handle ?? "@Nurain_Dev",
 }: {
   live?: boolean;
   displayName?: string;
   handle?: string;
 }) {
+  const { show } = useToast();
+  const [snapConnected, setSnapConnected] = useState(false);
+
+  const toggleSnap = () => {
+    setSnapConnected((prev) => !prev);
+    show(
+      snapConnected
+        ? "Snapchat disconnected"
+        : "Snapchat connected! Bitmoji & 1-tap share enabled 👻",
+      "👻"
+    );
+  };
+
   return (
     <>
-      <TopBar variant="title" title="Profile" />
-      <Pad>
-        <div className="flex flex-col items-center gap-1 pt-6 text-center">
-          <Avatar personId="me" size={90} />
-          <h1 className="mt-2.5 text-[1.5rem]">{displayName}</h1>
-          <div className="text-[0.9rem] text-fg-soft">{handle} · Yola, Adamawa</div>
-          <p className="mt-2 max-w-[30ch] text-[0.9rem] text-fg-soft">
-            Building community in the North. Here for suya runs, dev meetups, and sunset walks by the Benue.
-          </p>
-          <div className="mt-3.5 flex gap-[9px]">
-            <Button variant="violet" size="sm" full={false}>
-              Edit profile
-            </Button>
-            <Button variant="ghostline" size="sm" full={false}>
-              👻 Connect Snapchat
-            </Button>
+      <TopBar variant="title" title="Social Passport" subtitle="Your outdoor vibe & cred" />
+      <Pad className="pb-12">
+        {/* Profile Header */}
+        <div className="flex flex-col items-center pt-5 text-center">
+          <div className="relative">
+            <div className="rounded-full p-1 bg-gradient-to-tr from-accent via-violet to-good shadow-md">
+              <div className="rounded-full bg-surface p-1">
+                <Avatar personId="me" size={84} />
+              </div>
+            </div>
+            <span className="absolute bottom-1 right-1 grid h-6 w-6 place-items-center rounded-full bg-good text-white shadow-sm ring-2 ring-surface">
+              <Zap className="h-3.5 w-3.5 fill-current" />
+            </span>
           </div>
+
+          <h1 className="mt-3 font-display text-[1.55rem] font-bold text-fg">
+            {displayName}
+          </h1>
+          <div className="flex items-center gap-1.5 text-xs text-fg-soft font-medium">
+            <span>{handle}</span>
+            <span aria-hidden="true">·</span>
+            <span className="flex items-center gap-0.5">
+              <MapPin className="h-3 w-3 text-violet" /> Yola, Adamawa
+            </span>
+          </div>
+
+          <p className="mt-2.5 max-w-[32ch] text-[0.88rem] leading-relaxed text-fg-soft">
+            {ME.vibe} · Dev meetups, weekend football, and sunset walks along the Benue.
+          </p>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => show("Profile editing saved!", "✓")}
+              className="rounded-xl border border-line bg-surface px-4 py-2 text-xs font-bold text-fg active:scale-95 transition-transform"
+            >
+              Edit Vibe
+            </button>
+            <button
+              onClick={toggleSnap}
+              className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all active:scale-95 ${
+                snapConnected
+                  ? "bg-accent text-accent-ink shadow-sm"
+                  : "border border-line bg-surface text-fg hover:bg-surface-2"
+              }`}
+            >
+              <span>👻</span>
+              <span>{snapConnected ? "Snap Linked ✓" : "Connect Snapchat"}</span>
+            </button>
+          </div>
+
           {live && (
             <form action={signOut} className="mt-3">
-              <button type="submit" className="text-[0.82rem] font-semibold text-fg-soft underline">
+              <button type="submit" className="text-[0.8rem] font-semibold text-fg-soft underline">
                 Sign out
               </button>
             </form>
           )}
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2.5">
-          <Stat n="12" l="Outings" />
-          <Stat n="38" l="People met" />
-          <Stat n="4.9" l="Rating" />
+        {/* 3 Metric Cards */}
+        <div className="mt-6 grid grid-cols-3 gap-2.5">
+          <StatBox num="12" label="Outings" />
+          <StatBox num="38" label="Met Outside" />
+          <StatBox num="100%" label="Show Rate" highlight />
         </div>
 
-        <SectionHead title="Interests" right="Edit" />
-        <div className="mt-[13px] flex flex-wrap gap-2">
-          {ME.interests?.map((i) => (
-            <Pill key={i} variant="cat">
-              {i}
-            </Pill>
-          ))}
-        </div>
-
-        <SectionHead title="Badges" right="4 of 8" />
-        <div className="mt-[13px] grid grid-cols-4 gap-2.5">
-          {BADGES.map((b) => (
-            <div key={b.l} className={`text-center ${b.on ? "" : "opacity-40"}`}>
-              <div className="mx-auto grid h-[54px] w-[54px] place-items-center rounded-2xl border border-line bg-surface text-[25px]">
-                {b.e}
-              </div>
-              <div className="mt-[5px] text-[0.64rem] font-semibold text-fg-soft">{b.l}</div>
-            </div>
-          ))}
-        </div>
-
-        <SectionHead title="Privacy & safety" />
-        <div className="rounded-md border border-line bg-surface px-[15px]">
-          <SettingRow ic="📍" title="Share live location" sub="Off — only during active outings" type="off" />
-          <hr className="h-px border-0 bg-line" />
-          <SettingRow ic="👻" title="Show Bitmoji avatar" sub="When Snapchat is connected" type="off" />
-          <hr className="h-px border-0 bg-line" />
-          <SettingRow ic="🔔" title="Join request alerts" sub="Push + in-app" type="on" />
-          <hr className="h-px border-0 bg-line" />
-          <SettingRow ic="🛡️" title="Who can request to join" sub="Everyone in my city" type="chev" />
-        </div>
-
-        <SectionHead title="Past experiences" />
-        <div className="flex flex-col gap-[13px]">
-          {PAST.map((p) => (
-            <div key={p.t} className="flex items-center gap-3 rounded-md border border-line bg-surface p-[15px] shadow-card">
-              <div className="grid h-[50px] w-[50px] flex-none place-items-center rounded-[14px] bg-surface-2 text-[25px]">
-                {p.e}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-display font-bold">{p.t}</div>
-                <div className="text-[0.78rem] text-fg-soft">{p.s}</div>
-              </div>
-              <span className="rounded-full bg-[color-mix(in_srgb,var(--accent)_25%,transparent)] px-2.5 py-1 text-xs font-semibold text-accent-ink">
-                {p.r}
+        {/* Interests */}
+        <div className="mt-6">
+          <div className="mb-2.5 flex items-baseline justify-between">
+            <h2 className="font-display text-[1.05rem] font-bold text-fg">Interests & Vibes</h2>
+            <button
+              onClick={() => show("Interests updated!", "✨")}
+              className="text-xs font-bold text-violet hover:underline"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {ME.interests?.map((i) => (
+              <span
+                key={i}
+                className="rounded-lg bg-surface-2 px-3 py-1 text-xs font-bold text-fg-soft"
+              >
+                #{i}
               </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        <p className="mt-[18px] px-5 text-center text-[0.76rem] text-fg-faint">
-          Profile shows sample history.{" "}
-          <span className="inline-block rounded-md bg-surface-2 px-2 py-[3px] text-[0.68rem] font-bold uppercase tracking-wide text-fg-faint">
-            Demo data
-          </span>
-        </p>
+
+        {/* Badges / Street Cred */}
+        <div className="mt-6">
+          <div className="mb-2.5 flex items-baseline justify-between">
+            <h2 className="font-display text-[1.05rem] font-bold text-fg">Street Cred & Badges</h2>
+            <span className="text-xs font-semibold text-fg-soft">5 of 8 unlocked</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {BADGES.map((b) => (
+              <div
+                key={b.l}
+                className={`flex flex-col items-center rounded-xl border border-line bg-surface p-2 text-center transition-all ${
+                  b.on ? "opacity-100 shadow-xs" : "opacity-40"
+                }`}
+              >
+                <span className="text-2xl">{b.e}</span>
+                <span className="mt-1 text-[10px] font-bold text-fg leading-tight">
+                  {b.l}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Privacy & Safety Settings */}
+        <div className="mt-6">
+          <div className="mb-2.5">
+            <h2 className="font-display text-[1.05rem] font-bold text-fg">Safety & Coordinates</h2>
+          </div>
+          <div className="divide-y divide-line rounded-2xl border border-line bg-surface px-4">
+            <ToggleRow
+              icon={MapPin}
+              title="Share Live Coordinates"
+              subtitle="Only active while on an accepted outing"
+              initialState={false}
+            />
+            <ToggleRow
+              icon={ShieldCheck}
+              title="Meeting Venue Privacy"
+              subtitle="Keep exact spot hidden until crew locks"
+              initialState={true}
+            />
+            <ToggleRow
+              icon={Share2}
+              title="Snapchat Creative Share"
+              subtitle="Allow 1-tap sticker export to stories"
+              initialState={true}
+            />
+          </div>
+        </div>
+
+        {/* Past Memories */}
+        <div className="mt-6">
+          <div className="mb-2.5">
+            <h2 className="font-display text-[1.05rem] font-bold text-fg">Past Outings in Yola</h2>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {PAST.map((p) => (
+              <div
+                key={p.t}
+                className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5 shadow-xs"
+              >
+                <div className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-surface-2 text-xl">
+                  {p.e}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display text-xs font-bold text-fg leading-tight truncate">
+                    {p.t}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-fg-soft">{p.s}</div>
+                </div>
+                <span className="rounded-md bg-accent/25 px-2 py-0.5 text-xs font-extrabold text-accent-ink tabular-nums">
+                  {p.r}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </Pad>
     </>
   );
 }
 
-function Stat({ n, l }: { n: string; l: string }) {
-  return (
-    <div className="rounded-sm border border-line bg-surface px-2 py-3.5 text-center">
-      <div className="font-display text-[1.4rem] font-bold tabular-nums">{n}</div>
-      <div className="mt-0.5 text-[0.7rem] font-semibold text-fg-soft">{l}</div>
-    </div>
-  );
-}
-
-function SectionHead({ title, right }: { title: string; right?: string }) {
-  return (
-    <div className="mb-[13px] mt-6 flex items-baseline justify-between">
-      <h2 className="text-[1.05rem]">{title}</h2>
-      {right && <span className="text-[0.82rem] font-bold text-violet">{right}</span>}
-    </div>
-  );
-}
-
-function SettingRow({
-  ic,
-  title,
-  sub,
-  type,
+function StatBox({
+  num,
+  label,
+  highlight = false,
 }: {
-  ic: string;
-  title: string;
-  sub: string;
-  type: "on" | "off" | "chev";
+  num: string;
+  label: string;
+  highlight?: boolean;
 }) {
-  const [on, setOn] = useState(type === "on");
   return (
-    <div className="flex items-center gap-[13px] py-[15px]">
-      <div className="grid h-[38px] w-[38px] flex-none place-items-center rounded-[11px] bg-surface-2 text-[17px]">
-        {ic}
+    <div
+      className={`rounded-xl border border-line bg-surface p-3 text-center shadow-xs ${
+        highlight ? "ring-1 ring-good/40" : ""
+      }`}
+    >
+      <div
+        className={`font-display text-[1.35rem] font-extrabold tabular-nums ${
+          highlight ? "text-good" : "text-fg"
+        }`}
+      >
+        {num}
       </div>
-      <div className="flex-1">
-        <div className="text-[0.95rem] font-semibold">{title}</div>
-        <div className="text-[0.77rem] text-fg-soft">{sub}</div>
+      <div className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-fg-soft">
+        {label}
       </div>
-      {type === "chev" ? (
-        <span className="text-lg text-fg-faint">›</span>
-      ) : (
-        <button
-          onClick={() => setOn((v) => !v)}
-          aria-pressed={on}
-          aria-label={title}
-          className={`relative h-[27px] w-[46px] flex-none rounded-full transition-colors ${on ? "bg-good" : "bg-surface-2"}`}
-        >
-          <span
-            className="absolute left-[3px] top-[3px] h-[21px] w-[21px] rounded-full bg-white shadow transition-transform"
-            style={{ transform: on ? "translateX(19px)" : "none" }}
-          />
-        </button>
-      )}
+    </div>
+  );
+}
+
+function ToggleRow({
+  icon: Icon,
+  title,
+  subtitle,
+  initialState,
+}: {
+  icon: any;
+  title: string;
+  subtitle: string;
+  initialState: boolean;
+}) {
+  const [on, setOn] = useState(initialState);
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div className="flex items-start gap-2.5">
+        <Icon className="h-4 w-4 text-violet shrink-0 mt-0.5" />
+        <div>
+          <div className="text-xs font-bold text-fg">{title}</div>
+          <div className="text-[11px] text-fg-soft">{subtitle}</div>
+        </div>
+      </div>
+      <button
+        onClick={() => setOn((v) => !v)}
+        aria-pressed={on}
+        aria-label={title}
+        className={`relative h-6 w-11 flex-none rounded-full transition-colors ${
+          on ? "bg-good" : "bg-surface-2"
+        }`}
+      >
+        <span
+          className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+          style={{ transform: on ? "translateX(20px)" : "none" }}
+        />
+      </button>
     </div>
   );
 }

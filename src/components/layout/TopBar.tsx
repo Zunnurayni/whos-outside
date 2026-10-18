@@ -2,70 +2,101 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronLeft, Share2, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/Toast";
 
 interface Props {
   variant?: "home" | "title" | "detail";
   title?: string;
+  subtitle?: string;
+  onShare?: () => void;
 }
 
-export function TopBar({ variant = "title", title = "" }: Props) {
+export function TopBar({ variant = "title", title = "", subtitle, onShare }: Props) {
   const router = useRouter();
   const { show } = useToast();
 
+  const handleDefaultShare = () => {
+    if (onShare) {
+      onShare();
+    } else {
+      show("Snapchat sticker card generated (deep-links back here) 👻", "⤴");
+    }
+  };
+
   return (
     <header
-      className="sticky z-50 flex min-h-[58px] items-center gap-3 border-b border-line bg-surface py-3"
+      className="sticky z-50 flex min-h-[58px] items-center justify-between gap-3 border-b border-line/70 bg-surface/95 backdrop-blur-md px-4 py-2.5"
       style={{
         top: "env(safe-area-inset-top, 0px)",
-        paddingLeft: "max(18px, env(safe-area-inset-left, 0px))",
-        paddingRight: "max(18px, env(safe-area-inset-right, 0px))",
       }}
     >
       {variant === "detail" ? (
         <>
-          <button
-            onClick={() => router.back()}
-            aria-label="Back"
-            className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-[22px] text-fg-soft active:scale-90"
-          >
-            ‹
-          </button>
-          <span className="font-display text-[1.15rem] font-semibold">Activity</span>
-          <div className="flex-1" />
-          <button
-            onClick={() => show("Snapchat share card generated (deep-links back here) 👻", "⤴")}
-            aria-label="Share"
-            className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-[19px] text-fg-soft active:scale-90"
-          >
-            ⤴
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => router.back()}
+              aria-label="Back"
+              className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-fg transition-transform active:scale-90"
+            >
+              <ChevronLeft className="h-5 w-5 stroke-[2.2]" />
+            </button>
+            <div>
+              <div className="font-display text-[1.05rem] font-bold text-fg leading-tight">
+                {title || "Activity"}
+              </div>
+              {subtitle && <div className="text-[0.72rem] text-fg-soft">{subtitle}</div>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDefaultShare}
+              aria-label="Share"
+              className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-fg transition-transform active:scale-90"
+            >
+              <Share2 className="h-4 w-4 stroke-[2]" />
+            </button>
+            <ThemeToggle />
+          </div>
         </>
       ) : variant === "home" ? (
         <>
-          <Link href="/discover" className="flex items-center gap-2.5 font-display text-[1.15rem] font-semibold tracking-tight">
-            <span className="grid h-[30px] w-[30px] flex-none place-items-center rounded-[9px] bg-accent text-[17px] text-accent-ink">
+          <Link href="/discover" className="flex items-center gap-2.5 focus:outline-none">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-accent text-[18px] text-accent-ink shadow-sm">
               👻
             </span>
-            Who&apos;s Outside
+            <div className="flex flex-col">
+              <span className="font-display text-[1.12rem] font-bold tracking-tight text-fg leading-none">
+                Who&apos;s Outside?
+              </span>
+              <span className="mt-0.5 text-[0.68rem] font-semibold text-violet">
+                Yola Pulse · 14 outside
+              </span>
+            </div>
           </Link>
-          <div className="flex-1" />
-          <ThemeToggle />
-          <button
-            onClick={() => show("3 new: 1 join request, 2 plans filling", "🔔")}
-            aria-label="Notifications"
-            className="relative grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-[19px] text-fg-soft active:scale-90"
-          >
-            <span className="absolute right-[9px] top-2 h-2 w-2 rounded-full bg-crit ring-2 ring-surface" />
-            🔔
-          </button>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={() => show("3 new: 1 join request, 2 plans filling up fast", "🔔")}
+              aria-label="Notifications"
+              className="relative grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-fg transition-transform active:scale-90"
+            >
+              <Bell className="h-4 w-4 stroke-[2]" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-crit ring-2 ring-surface" />
+            </button>
+          </div>
         </>
       ) : (
         <>
-          <span className="font-display text-[1.15rem] font-semibold">{title}</span>
-          <div className="flex-1" />
-          <ThemeToggle />
+          <div>
+            <span className="font-display text-[1.15rem] font-bold text-fg">{title}</span>
+            {subtitle && <div className="text-[0.72rem] text-fg-soft">{subtitle}</div>}
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+          </div>
         </>
       )}
     </header>

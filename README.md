@@ -55,6 +55,7 @@ That's it. The app is fully navigable with sample data. To connect the real back
 | **[docs/SETUP.md](docs/SETUP.md)** | Step-by-step: clone, env vars, Supabase project, migration, seed, deploy to Vercel |
 | **[docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)** | The 6 phases, what to build in each, and exactly where to drop real queries |
 | **[docs/DESIGN_GUIDE.md](docs/DESIGN_GUIDE.md)** | Design tokens, typography, components, voice, accessibility, dark mode |
+| **[docs/UI_UX_CHANGELOG.md](docs/UI_UX_CHANGELOG.md)** | Full breakdown of the Gen Z social discovery UI/UX redesign & features |
 | **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | Folder structure, data model, RLS, the demo-vs-live data layer |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | How to contribute, branch naming, commit style, PR flow |
 
