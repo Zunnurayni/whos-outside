@@ -1,0 +1,6 @@
+{
+  "name": "Who's Outside?",
+  "description": "Find your people. Experience more of life. A social discovery platform.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

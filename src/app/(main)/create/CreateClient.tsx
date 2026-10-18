@@ -1,0 +1,222 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Sparkles, MapPin, Calendar, Clock, Users, Wallet, ShieldCheck, Check } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
+import { TopBar } from "@/components/layout/TopBar";
+import { Pad } from "@/components/layout/AppShell";
+import { useToast } from "@/components/ui/Toast";
+
+const PRESETS = [
+  { emoji: "🍢", title: "Suya run at Jimeta Market", cat: "food", cost: 3000, size: 5 },
+  { emoji: "⚽", title: "Casual 5-a-side soccer", cat: "sports", cost: 1000, size: 8 },
+  { emoji: "🌅", title: "Sunset walk by River Benue", cat: "outdoors", cost: 0, size: 6 },
+  { emoji: "🎧", title: "Rooftop aux & chill beats", cat: "music", cost: 1500, size: 6 },
+  { emoji: "💻", title: "BCH Hub build & coffee", cat: "tech", cost: 0, size: 8 },
+];
+
+export function CreateClient() {
+  const router = useRouter();
+  const { show } = useToast();
+  const [cat, setCat] = useState("food");
+  const [group, setGroup] = useState(5);
+  const [title, setTitle] = useState("");
+  const [venue, setVenue] = useState("");
+  const [cost, setCost] = useState("");
+  const [time, setTime] = useState("7:30 PM");
+
+  const applyPreset = (p: typeof PRESETS[0]) => {
+    setTitle(p.title);
+    setCat(p.cat);
+    setCost(p.cost > 0 ? String(p.cost) : "");
+    setGroup(p.size);
+    show(`Loaded "${p.title}" preset ⚡`, "✨");
+  };
+
+  const post = () => {
+    if (!title.trim()) {
+      show("Give your plan a title first ✏️", "⚠️");
+      return;
+    }
+    show("Plan dropped! Your crew radar is live 👻", "🎉");
+    setTimeout(() => router.push("/discover"), 800);
+  };
+
+  const inputClass =
+    "w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-[0.95rem] text-fg placeholder:text-fg-faint focus:border-violet focus:outline-none focus:ring-1 focus:ring-violet transition-colors";
+  const labelClass = "mb-1.5 flex items-center gap-1.5 text-[0.8rem] font-bold text-fg-soft";
+
+  return (
+    <>
+      <TopBar variant="title" title="Drop a Plan" />
+      <Pad className="pb-10">
+        <div className="pt-4 pb-2">
+          <h1 className="font-display text-[1.65rem] font-bold text-fg leading-tight">
+            Who wants to pull up? 👻
+          </h1>
+          <p className="mt-1 text-[0.88rem] text-fg-soft">
+            Drop an activity in Yola. People nearby request to join.
+          </p>
+        </div>
+
+        {/* 1-Tap Quick Vibe Presets */}
+        <div className="mt-3">
+          <span className="flex items-center gap-1.5 text-[0.74rem] font-bold uppercase tracking-wider text-violet">
+            <Sparkles className="h-3.5 w-3.5" /> Quick 1-Tap Presets
+          </span>
+          <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+            {PRESETS.map((p) => (
+              <button
+                key={p.title}
+                onClick={() => applyPreset(p)}
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-fg transition-all active:scale-95 hover:border-violet/50 hover:bg-surface-2"
+              >
+                <span>{p.emoji}</span>
+                <span>{p.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan Title */}
+        <div className="mt-5">
+          <label className={labelClass} htmlFor="c-title">
+            What&apos;s the outing?
+          </label>
+          <input
+            id="c-title"
+            className={inputClass}
+            placeholder="e.g. Suya run at Jimeta market"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        {/* Category Selector */}
+        <div className="mt-4">
+          <span className={labelClass}>Category</span>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.filter((c) => c.id !== "all").map((c) => {
+              const active = cat === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setCat(c.id)}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
+                    active
+                      ? "border-violet bg-violet text-white shadow-xs"
+                      : "border-line bg-surface text-fg-soft hover:text-fg"
+                  }`}
+                >
+                  <span>{c.emoji}</span>
+                  <span>{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Public Venue */}
+        <div className="mt-4">
+          <label className={labelClass} htmlFor="c-venue">
+            <MapPin className="h-3.5 w-3.5 text-violet" />
+            Public Meeting Venue
+          </label>
+          <input
+            id="c-venue"
+            className={inputClass}
+            placeholder="e.g. Jimeta Modern Market strip, Yola"
+            value={venue}
+            onChange={(e) => setVenue(e.target.value)}
+          />
+          <div className="mt-1.5 flex items-center gap-1.5 text-[0.74rem] text-fg-faint">
+            <ShieldCheck className="h-3.5 w-3.5 text-good" />
+            Only public spots are shown — never your home or private coordinates.
+          </div>
+        </div>
+
+        {/* Date & Time */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass} htmlFor="c-date">
+              <Calendar className="h-3.5 w-3.5 text-violet" />
+              Day
+            </label>
+            <select id="c-date" className={inputClass}>
+              <option>Today</option>
+              <option>Tomorrow</option>
+              <option>This Friday</option>
+              <option>This Saturday</option>
+              <option>This Sunday</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="c-time">
+              <Clock className="h-3.5 w-3.5 text-violet" />
+              Start Time
+            </label>
+            <input
+              id="c-time"
+              className={inputClass}
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Cost & Group Size */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass} htmlFor="c-cost">
+              <Wallet className="h-3.5 w-3.5 text-violet" />
+              Cost / Person (₦)
+            </label>
+            <input
+              id="c-cost"
+              className={inputClass}
+              placeholder="0 for free"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+            />
+          </div>
+          <div>
+            <span className={labelClass}>
+              <Users className="h-3.5 w-3.5 text-violet" />
+              Crew Limit
+            </span>
+            <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2">
+              <button
+                onClick={() => setGroup((g) => Math.max(2, g - 1))}
+                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
+                aria-label="Fewer"
+              >
+                −
+              </button>
+              <span className="font-display text-[1.1rem] font-bold text-fg tabular-nums">
+                {group}
+              </span>
+              <button
+                onClick={() => setGroup((g) => Math.min(20, g + 1))}
+                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
+                aria-label="More"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="mt-7">
+          <button
+            onClick={post}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-4 font-display text-[1.05rem] font-extrabold text-accent-ink shadow-lg shadow-accent/20 active:scale-98 transition-transform"
+          >
+            <span>Post Plan to Radar 👻</span>
+          </button>
+        </div>
+      </Pad>
+    </>
+  );
+}
