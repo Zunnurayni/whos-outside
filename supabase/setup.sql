@@ -1,8 +1,7 @@
 -- ============================================================
 -- Who's Outside? — ONE-PASTE SETUP
 -- Paste this entire file into the Supabase SQL Editor and Run.
--- Safe to re-run: types, tables, indexes and policies are all guarded.
--- Combines supabase/migrations/0001_init.sql + supabase/seed.sql
+-- Safe to re-run. Combines all migrations + seed.
 -- ============================================================
 
 -- ============================================================
@@ -302,6 +301,23 @@ create policy "Users file reports"
 drop policy if exists "Reporter reads own reports" on public.reports;
 create policy "Reporter reads own reports"
   on public.reports for select using (auth.uid() = reporter_id);
+
+
+-- ==================== PHASE 3: VENUE COORDS ====================
+-- ============================================================
+-- Phase 3 — expose venue coordinates as plain numbers
+-- Adds generated lat/lng columns to venues, derived from the PostGIS
+-- location point, so they come back as numbers in a normal PostgREST
+-- join (no WKB parsing on the client). Safe to re-run.
+-- ============================================================
+
+alter table public.venues
+  add column if not exists lat double precision
+    generated always as (st_y(location::geometry)) stored;
+
+alter table public.venues
+  add column if not exists lng double precision
+    generated always as (st_x(location::geometry)) stored;
 
 
 -- ==================== SEED DATA ====================

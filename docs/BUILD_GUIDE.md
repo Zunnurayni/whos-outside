@@ -87,31 +87,28 @@ Every action returns `{ ok, message }`; when there is no backend it returns `mes
 
 ---
 
-## Phase 3 — Places & event discovery (maps)
+## Phase 3 — Places & event discovery (maps) ✅ (Mapbox code shipped)
 
-Replace the stylised map with a real one and add venue search.
+Real map + venue search. **Status: built with Mapbox.** Add a free `NEXT_PUBLIC_MAPBOX_TOKEN` to `.env.local` and the Explore screen renders a live Yola map; without one it shows the stylised fallback. Nothing else to change.
 
-### 3.1 Pick a provider
-Mapbox GL JS or Google Maps Platform. Compare pricing, Nigeria coverage, and terms. Put the token in `.env.local` (`NEXT_PUBLIC_MAPBOX_TOKEN` or `NEXT_PUBLIC_GOOGLE_MAPS_KEY`).
+### 3.1 Provider — Mapbox
+Chosen for brand-matching styling and a generous free tier (50k map loads/month). Token: `NEXT_PUBLIC_MAPBOX_TOKEN`. It's a public client key — restrict it by URL in the Mapbox dashboard.
 
-### 3.2 Swap the canvas
-In `src/app/(main)/map/MapClient.tsx`, replace the `.map-canvas` block with the provider's map component. Keep the pin → floating-card interaction; only the rendering changes. Feed pins from the spatial RPC:
+### 3.2 The map — DONE
+`src/components/map/MapboxMap.tsx` is a real Mapbox GL map (dark/light auto, branded pins, click-to-focus, fly-to, fit-bounds). `src/app/(main)/map/MapClient.tsx` renders it when a token exists and falls back to the stylised `StylisedCanvas` otherwise. Pin styles live in `globals.css` (`.wo-pin`) because markers sit outside the React tree.
 
-```ts
-const { data } = await supabase.rpc("get_nearby_activities", {
-  user_lat: lat, user_lng: lng, radius_meters: 10000,
-});
-```
+Coordinates flow through the data layer: migration `0002_activity_coords.sql` adds generated `lat`/`lng` columns to `venues`; the activities query selects them; `ActivityView` now carries `lat`/`lng`; sample data has real Yola coords so the map works in demo mode too.
 
-`useGeolocation` (in `src/lib/hooks`) already provides `lat`/`lng` with a manual Yola fallback.
+### 3.3 Venue search — DONE
+`src/components/activity/VenueSearch.tsx` + `src/lib/geocode.ts` autocomplete real Yola places via Mapbox geocoding (biased to Yola, country=NG). Picking a result captures `lat`/`lng`; `createActivity` stores the real PostGIS point instead of the Yola-centre placeholder. No token → plain text input, coords fall back to Yola centre.
 
-### 3.3 Venue search on create
-Wire the venue input in `CreateClient` to the provider's Places/geocoding API, store the chosen venue in `venues` with a PostGIS point.
+### 3.4 Admin review queue — remaining
+Still to build: an admin route listing `events` with `status = 'pending_review'` to publish or reject. Validate external event data before publishing. (Deferred; not needed for the core map experience.)
 
-### 3.4 Admin review queue
-Build an admin route that lists `events` with `status = 'pending_review'` and lets an admin publish or reject. Validate external event data before publishing.
+### Run the new migration
+Paste `supabase/migrations/0002_activity_coords.sql` (or re-run the combined `supabase/setup.sql`) in the SQL Editor so `venues.lat/lng` exist.
 
-**Acceptance:** activities appear as real pins; distance filtering works; a submitted event waits for review before showing publicly.
+**Acceptance:** with a Mapbox token, activities appear as real pins on a Yola map; creating a plan with venue search drops the pin at the real location.
 
 ---
 

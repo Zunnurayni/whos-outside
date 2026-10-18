@@ -20,7 +20,7 @@ export interface ActivityRow {
   max_participants: number;
   status: string;
   creator_id: string;
-  venues: { name: string | null; city: string | null } | null;
+  venues: { name: string | null; city: string | null; lat: number | null; lng: number | null } | null;
   activity_participants: { user_id: string; status: string }[] | null;
 }
 
@@ -101,6 +101,8 @@ export function mapActivityRow(row: ActivityRow): ActivityView {
     status,
     mapX: pos.x,
     mapY: pos.y,
+    lat: row.venues?.lat ?? null,
+    lng: row.venues?.lng ?? null,
   };
 }
 

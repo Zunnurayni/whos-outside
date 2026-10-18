@@ -1,5 +1,6 @@
 import { CreateClient } from "./CreateClient";
 
 export default function CreatePage() {
-  return <CreateClient />;
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+  return <CreateClient mapboxToken={mapboxToken} />;
 }

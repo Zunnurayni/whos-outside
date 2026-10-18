@@ -17,7 +17,7 @@ import { mapActivityRow, mapEventRow, type ActivityRow, type EventRowJoined } fr
 const ACTIVITY_SELECT = `
   id, title, description, category, starts_at, ends_at,
   estimated_cost_per_person, min_participants, max_participants, status, creator_id,
-  venues ( name, city ),
+  venues ( name, city, lat, lng ),
   activity_participants ( user_id, status )
 `;
 

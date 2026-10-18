@@ -47,11 +47,14 @@ export interface ActivityView {
   max: number;
   crew: string[]; // person ids
   status: "open" | "filling" | "filled";
-  /** stylised map coordinate as a percentage of the canvas */
+  /** stylised map coordinate as a percentage of the canvas (fallback map) */
   mapX: number;
   mapY: number;
   vibes?: string[];
   themeGradient?: string;
+  /** real-world coordinates for the Mapbox map; null if unknown */
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface EventView {

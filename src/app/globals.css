@@ -123,3 +123,40 @@ img {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Mapbox activity pins (markers live outside the React tree, so style here) */
+.wo-pin {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.12s;
+}
+.wo-pin:active {
+  transform: scale(0.94);
+}
+.wo-pin[data-hot="1"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow);
+  z-index: 2;
+}
+.wo-pin-emoji {
+  font-size: 15px;
+}
+.wo-pin-price {
+  color: var(--violet);
+}
+/* keep Mapbox controls clear of the floating card and tab bar */
+.mapboxgl-ctrl-bottom-right {
+  bottom: 220px;
+}

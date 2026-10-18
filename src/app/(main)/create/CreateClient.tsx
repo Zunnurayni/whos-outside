@@ -7,6 +7,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { useToast } from "@/components/ui/Toast";
+import { VenueSearch } from "@/components/activity/VenueSearch";
 import { createActivity } from "@/lib/actions";
 
 const PRESETS = [
@@ -36,7 +37,7 @@ function toIso(dateChoice: string, time: string): string {
   return d.toISOString();
 }
 
-export function CreateClient() {
+export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
   const router = useRouter();
   const { show } = useToast();
   const [cat, setCat] = useState("food");
@@ -45,6 +46,7 @@ export function CreateClient() {
   const [venue, setVenue] = useState("");
   const [cost, setCost] = useState("");
   const [time, setTime] = useState("7:30 PM");
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [pending, startTransition] = useTransition();
 
   const applyPreset = (p: typeof PRESETS[0]) => {
@@ -75,6 +77,8 @@ export function CreateClient() {
       maxParticipants: group,
       minParticipants: Math.min(3, group),
       joinRule: joinSel.startsWith("Invite") ? "invite" : joinSel.startsWith("Approve") ? "approve" : "open",
+      lat: coords.lat,
+      lng: coords.lng,
     };
     startTransition(async () => {
       const res = await createActivity(payload);
@@ -182,12 +186,12 @@ export function CreateClient() {
             <MapPin className="h-3.5 w-3.5 text-violet" />
             Public Meeting Venue
           </label>
-          <input
-            id="c-venue"
-            className={inputClass}
-            placeholder="e.g. Jimeta Modern Market strip, Yola"
+          <VenueSearch
+            token={mapboxToken}
             value={venue}
-            onChange={(e) => setVenue(e.target.value)}
+            onChange={setVenue}
+            onPick={({ lat, lng }) => setCoords({ lat, lng })}
+            className={inputClass}
           />
           <div className="mt-1.5 flex items-center gap-1.5 text-[0.74rem] text-fg-faint">
             <ShieldCheck className="h-3.5 w-3.5 text-good" />

@@ -40,6 +40,9 @@ export async function createActivity(input: {
   maxParticipants: number;
   minParticipants: number;
   joinRule: string;
+  /** real coordinates from venue search; falls back to Yola centre */
+  lat?: number | null;
+  lng?: number | null;
 }): Promise<ActionResult> {
   const supabase = createClient();
   if (!supabase) return noBackend();
@@ -52,6 +55,10 @@ export async function createActivity(input: {
   // Upsert the venue (public place) so the activity can link to it.
   let venueId: string | null = null;
   if (input.venueName.trim()) {
+    // Use geocoded coordinates when the venue search provided them; otherwise
+    // Yola centre so the pin still lands in the right city.
+    const lng = input.lng ?? 12.4954;
+    const lat = input.lat ?? 9.2035;
     const { data: venue } = await supabase
       .from("venues")
       .insert({
@@ -59,8 +66,7 @@ export async function createActivity(input: {
         category: input.category,
         address: input.venueName.trim(),
         city: "Yola",
-        // Yola centre as a placeholder point until Phase 3 geocodes it.
-        location: "POINT(12.4954 9.2035)",
+        location: `POINT(${lng} ${lat})`,
       })
       .select("id")
       .single();

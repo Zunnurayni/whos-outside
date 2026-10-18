@@ -134,6 +134,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 40,
     vibes: ["Spontaneous", "First-timers welcome", "Good eats", "Split bill"],
     themeGradient: "from-amber-950/80 via-orange-950/40 to-neutral-900",
+    lat: 9.273, lng: 12.46,
   },
   {
     id: "a2",
@@ -158,6 +159,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 28,
     vibes: ["High energy", "All skill levels", "Split pitch fee"],
     themeGradient: "from-emerald-950/80 via-teal-950/40 to-neutral-900",
+    lat: 9.206, lng: 12.443,
   },
   {
     id: "a3",
@@ -182,6 +184,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 62,
     vibes: ["Chill chat", "Free", "Golden hour photos", "Scenic"],
     themeGradient: "from-orange-950/80 via-violet-950/40 to-neutral-900",
+    lat: 9.285, lng: 12.448,
   },
   {
     id: "a4",
@@ -206,6 +209,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 52,
     vibes: ["Open session", "Free snacks", "Dev networking", "Beginner friendly"],
     themeGradient: "from-blue-950/80 via-indigo-950/40 to-neutral-900",
+    lat: 9.265, lng: 12.455,
   },
   {
     id: "a5",
@@ -230,6 +234,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 60,
     vibes: ["Creative flow", "Quiet vibes", "Materials provided"],
     themeGradient: "from-pink-950/80 via-purple-950/40 to-neutral-900",
+    lat: 9.201, lng: 12.439,
   },
   {
     id: "a6",
@@ -254,6 +259,7 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     mapY: 22,
     vibes: ["Aux rotation", "Night owl", "Rooftop breeze", "BYOB vibe"],
     themeGradient: "from-purple-950/80 via-fuchsia-950/40 to-neutral-900",
+    lat: 9.278, lng: 12.462,
   },
 ];
 
