@@ -10,15 +10,24 @@ create extension if not exists postgis;
 create extension if not exists "uuid-ossp";
 
 -- 2. Enums ------------------------------------------------------
-create type activity_status as enum ('draft', 'open', 'filled', 'completed', 'cancelled');
-create type activity_visibility as enum ('public', 'unlisted', 'invite_only');
-create type participation_status as enum (
-  'requested', 'accepted', 'declined', 'confirmed_on_way', 'attended', 'flaked'
-);
-create type event_status as enum ('pending_review', 'published', 'rejected', 'cancelled');
+-- Wrapped so re-running the migration is safe (create type has no IF NOT EXISTS).
+do $$ begin
+  create type activity_status as enum ('draft', 'open', 'filled', 'completed', 'cancelled');
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create type activity_visibility as enum ('public', 'unlisted', 'invite_only');
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create type participation_status as enum (
+    'requested', 'accepted', 'declined', 'confirmed_on_way', 'attended', 'flaked'
+  );
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create type event_status as enum ('pending_review', 'published', 'rejected', 'cancelled');
+exception when duplicate_object then null; end $$;
 
 -- 3. Profiles (linked to Supabase Auth & Snap Kit identity) -----
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   snapchat_id text unique,
   display_name text not null,
@@ -31,7 +40,7 @@ create table public.profiles (
 );
 
 -- Interests each profile declares (used by the matching ranker)
-create table public.user_interests (
+create table if not exists public.user_interests (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references public.profiles(id) on delete cascade not null,
   category text not null,
@@ -39,7 +48,7 @@ create table public.user_interests (
 );
 
 -- 4. Venues (public places, spatial coordinates for map pins) ---
-create table public.venues (
+create table if not exists public.venues (
   id uuid default gen_random_uuid() primary key,
   name text not null,
   category text not null, -- 'food', 'sports', 'outdoors', 'tech', 'arts', ...
@@ -48,10 +57,10 @@ create table public.venues (
   location geography(point, 4326) not null, -- EPSG:4326 GPS coords
   created_at timestamptz default now() not null
 );
-create index venues_geo_index on public.venues using gist (location);
+create index if not exists venues_geo_index on public.venues using gist (location);
 
 -- 5. Activities / plans -----------------------------------------
-create table public.activities (
+create table if not exists public.activities (
   id uuid default gen_random_uuid() primary key,
   creator_id uuid references public.profiles(id) on delete cascade not null,
   venue_id uuid references public.venues(id) on delete set null,
@@ -67,11 +76,11 @@ create table public.activities (
   status activity_status default 'open' not null,
   created_at timestamptz default now() not null
 );
-create index activities_starts_at_index on public.activities (starts_at);
-create index activities_category_index on public.activities (category);
+create index if not exists activities_starts_at_index on public.activities (starts_at);
+create index if not exists activities_category_index on public.activities (category);
 
 -- 6. Participation state machine --------------------------------
-create table public.activity_participants (
+create table if not exists public.activity_participants (
   id uuid default gen_random_uuid() primary key,
   activity_id uuid references public.activities(id) on delete cascade not null,
   user_id uuid references public.profiles(id) on delete cascade not null,
@@ -79,10 +88,10 @@ create table public.activity_participants (
   created_at timestamptz default now() not null,
   unique (activity_id, user_id)
 );
-create index activity_participants_activity_index on public.activity_participants (activity_id);
+create index if not exists activity_participants_activity_index on public.activity_participants (activity_id);
 
 -- 7. Organised events (submitted / imported, admin-reviewed) ----
-create table public.events (
+create table if not exists public.events (
   id uuid default gen_random_uuid() primary key,
   submitted_by uuid references public.profiles(id) on delete set null,
   venue_id uuid references public.venues(id) on delete set null,
@@ -98,7 +107,7 @@ create table public.events (
 );
 
 -- 8. Post-activity reviews --------------------------------------
-create table public.reviews (
+create table if not exists public.reviews (
   id uuid default gen_random_uuid() primary key,
   activity_id uuid references public.activities(id) on delete cascade not null,
   reviewer_id uuid references public.profiles(id) on delete cascade not null,
@@ -109,7 +118,7 @@ create table public.reviews (
 );
 
 -- 9. Safety reports ---------------------------------------------
-create table public.reports (
+create table if not exists public.reports (
   id uuid default gen_random_uuid() primary key,
   reporter_id uuid references public.profiles(id) on delete set null,
   reported_user_id uuid references public.profiles(id) on delete set null,
@@ -206,63 +215,83 @@ alter table public.reviews enable row level security;
 alter table public.reports enable row level security;
 
 -- Profiles: public read, self write
+drop policy if exists "Profiles are viewable by everyone" on public.profiles;
 create policy "Profiles are viewable by everyone"
   on public.profiles for select using (true);
+drop policy if exists "Users insert own profile" on public.profiles;
 create policy "Users insert own profile"
   on public.profiles for insert with check (auth.uid() = id);
+drop policy if exists "Users update own profile" on public.profiles;
 create policy "Users update own profile"
   on public.profiles for update using (auth.uid() = id);
 
 -- Interests: public read, self write
+drop policy if exists "Interests are viewable by everyone" on public.user_interests;
 create policy "Interests are viewable by everyone"
   on public.user_interests for select using (true);
+drop policy if exists "Users manage own interests" on public.user_interests;
 create policy "Users manage own interests"
   on public.user_interests for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Venues: public read, any authenticated user may add
+drop policy if exists "Venues are viewable by everyone" on public.venues;
 create policy "Venues are viewable by everyone"
   on public.venues for select using (true);
+drop policy if exists "Authenticated users add venues" on public.venues;
 create policy "Authenticated users add venues"
   on public.venues for insert with check (auth.role() = 'authenticated');
 
 -- Activities: anyone can view non-cancelled; creators own their rows
+drop policy if exists "Anyone can view open activities" on public.activities;
 create policy "Anyone can view open activities"
   on public.activities for select using (status <> 'cancelled');
+drop policy if exists "Users create activities" on public.activities;
 create policy "Users create activities"
   on public.activities for insert with check (auth.uid() = creator_id);
+drop policy if exists "Creators update own activities" on public.activities;
 create policy "Creators update own activities"
   on public.activities for update using (auth.uid() = creator_id);
 
 -- Participants: visible to the member themselves and the activity creator
+drop policy if exists "View participants if member or creator" on public.activity_participants;
 create policy "View participants if member or creator"
   on public.activity_participants for select using (
     auth.uid() = user_id
     or auth.uid() in (select creator_id from public.activities where id = activity_id)
   );
+drop policy if exists "Users request to join" on public.activity_participants;
 create policy "Users request to join"
   on public.activity_participants for insert with check (auth.uid() = user_id);
+drop policy if exists "Member or creator updates participation" on public.activity_participants;
 create policy "Member or creator updates participation"
   on public.activity_participants for update using (
     auth.uid() = user_id
     or auth.uid() in (select creator_id from public.activities where id = activity_id)
   );
+drop policy if exists "Member leaves (deletes own participation)" on public.activity_participants;
 create policy "Member leaves (deletes own participation)"
   on public.activity_participants for delete using (auth.uid() = user_id);
 
 -- Events: everyone sees published; submitter sees their own in any state
+drop policy if exists "Published events are public" on public.events;
 create policy "Published events are public"
   on public.events for select using (status = 'published' or auth.uid() = submitted_by);
+drop policy if exists "Authenticated users submit events" on public.events;
 create policy "Authenticated users submit events"
   on public.events for insert with check (auth.uid() = submitted_by);
 
 -- Reviews: public read, author writes for activities they attended
+drop policy if exists "Reviews are viewable by everyone" on public.reviews;
 create policy "Reviews are viewable by everyone"
   on public.reviews for select using (true);
+drop policy if exists "Attendees write reviews" on public.reviews;
 create policy "Attendees write reviews"
   on public.reviews for insert with check (auth.uid() = reviewer_id);
 
 -- Reports: a user can file a report and read only their own
+drop policy if exists "Users file reports" on public.reports;
 create policy "Users file reports"
   on public.reports for insert with check (auth.uid() = reporter_id);
+drop policy if exists "Reporter reads own reports" on public.reports;
 create policy "Reporter reads own reports"
   on public.reports for select using (auth.uid() = reporter_id);
