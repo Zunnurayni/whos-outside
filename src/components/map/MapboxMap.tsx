@@ -48,7 +48,23 @@ export function MapboxMap({
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     mapRef.current = map;
 
+    // The container often has its final height only after the dynamic import
+    // and layout settle, so Mapbox can init at 0px and render blank. Force a
+    // resize once the map loads, again shortly after, and whenever the
+    // container actually changes size.
+    map.on("load", () => map.resize());
+    const t1 = setTimeout(() => map.resize(), 150);
+    const t2 = setTimeout(() => map.resize(), 600);
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => map.resize())
+        : null;
+    if (ro && containerRef.current) ro.observe(containerRef.current);
+
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      ro?.disconnect();
       map.remove();
       mapRef.current = null;
       markersRef.current = {};
@@ -119,5 +135,5 @@ export function MapboxMap({
     }
   }, [focusId, activities]);
 
-  return <div ref={containerRef} className="absolute inset-0" />;
+  return <div ref={containerRef} className="absolute inset-0 h-full w-full" />;
 }
