@@ -7,6 +7,7 @@ import { Pad } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
+import { signOut } from "@/lib/actions";
 
 const BADGES = [
   { e: "🎉", l: "First outing", on: true },
@@ -25,15 +26,23 @@ const PAST = [
   { e: "💻", t: "BCH Hub build session", s: "Last month · 11 people", r: "⭐ 5.0" },
 ];
 
-export function ProfileClient() {
+export function ProfileClient({
+  live = false,
+  displayName = "Nurain",
+  handle = "@Nurain_Dev",
+}: {
+  live?: boolean;
+  displayName?: string;
+  handle?: string;
+}) {
   return (
     <>
       <TopBar variant="title" title="Profile" />
       <Pad>
         <div className="flex flex-col items-center gap-1 pt-6 text-center">
           <Avatar personId="me" size={90} />
-          <h1 className="mt-2.5 text-[1.5rem]">Nurain</h1>
-          <div className="text-[0.9rem] text-fg-soft">@Nurain_Dev · Yola, Adamawa</div>
+          <h1 className="mt-2.5 text-[1.5rem]">{displayName}</h1>
+          <div className="text-[0.9rem] text-fg-soft">{handle} · Yola, Adamawa</div>
           <p className="mt-2 max-w-[30ch] text-[0.9rem] text-fg-soft">
             Building community in the North. Here for suya runs, dev meetups, and sunset walks by the Benue.
           </p>
@@ -45,6 +54,13 @@ export function ProfileClient() {
               👻 Connect Snapchat
             </Button>
           </div>
+          {live && (
+            <form action={signOut} className="mt-3">
+              <button type="submit" className="text-[0.82rem] font-semibold text-fg-soft underline">
+                Sign out
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="mt-5 grid grid-cols-3 gap-2.5">

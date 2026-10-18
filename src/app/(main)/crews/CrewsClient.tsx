@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
+import { confirmOnWay, respondToRequest } from "@/lib/actions";
 
 const STATE_META: Record<CrewState, { cls: string; icon: string; label: string }> = {
   locked: { cls: "bg-[color-mix(in_srgb,var(--good)_15%,transparent)] text-good", icon: "🔒", label: "Crew locked" },
@@ -94,7 +95,13 @@ export function CrewsClient({ activities, crews }: { activities: ActivityView[];
                         size="sm"
                         full={false}
                         className="mt-2.5"
-                        onClick={() => show("You're confirmed — meeting pin unlocked 📍", "✅")}
+                        onClick={async () => {
+                          const res = await confirmOnWay(a.id);
+                          show(
+                            res.message === "demo" ? "You're confirmed — meeting pin unlocked 📍" : res.message,
+                            res.ok || res.message === "demo" ? "✅" : "⚠️"
+                          );
+                        }}
                       >
                         I&apos;m on my way
                       </Button>
@@ -116,7 +123,7 @@ export function CrewsClient({ activities, crews }: { activities: ActivityView[];
                         {c.requests.length} join request{c.requests.length > 1 ? "s" : ""}
                       </div>
                       {c.requests.map((r) => (
-                        <RequestRow key={r.personId} personId={r.personId} shared={r.shared} />
+                        <RequestRow key={r.personId} personId={r.personId} shared={r.shared} activityId={a.id} />
                       ))}
                     </>
                   )}
@@ -138,10 +145,29 @@ export function CrewsClient({ activities, crews }: { activities: ActivityView[];
   );
 }
 
-function RequestRow({ personId, shared }: { personId: string; shared: string[] }) {
+function RequestRow({
+  personId,
+  shared,
+  activityId,
+}: {
+  personId: string;
+  shared: string[];
+  activityId: string;
+}) {
   const { show } = useToast();
   const [done, setDone] = useState(false);
   const p = personById(personId);
+
+  const respond = async (decision: "accepted" | "declined") => {
+    setDone(true);
+    const res = await respondToRequest(personId, activityId, decision);
+    if (res.message === "demo") {
+      show(decision === "accepted" ? `${p.name} added to the crew ✅` : "Request declined", "✓");
+    } else {
+      show(res.message, res.ok ? "✓" : "⚠️");
+    }
+  };
+
   return (
     <div className={`flex items-center gap-[11px] py-[11px] transition-opacity ${done ? "opacity-40" : ""}`}>
       <Avatar personId={personId} size={38} />
@@ -151,20 +177,14 @@ function RequestRow({ personId, shared }: { personId: string; shared: string[] }
       </div>
       <div className="ml-auto flex gap-[7px]">
         <button
-          onClick={() => {
-            setDone(true);
-            show(`${p.name} added to the crew ✅`, "✓");
-          }}
+          onClick={() => respond("accepted")}
           className="grid h-[34px] w-[34px] place-items-center rounded-[10px] bg-good text-[15px] text-white"
           aria-label="Approve"
         >
           ✓
         </button>
         <button
-          onClick={() => {
-            setDone(true);
-            show("Request declined");
-          }}
+          onClick={() => respond("declined")}
           className="grid h-[34px] w-[34px] place-items-center rounded-[10px] bg-surface-2 text-[15px] text-fg-soft"
           aria-label="Decline"
         >

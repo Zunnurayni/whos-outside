@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { isBackendLive } from "@/lib/auth";
+import { EmailLoginForm } from "./EmailLoginForm";
 
-// Phase 2 wires this to Supabase Auth (email magic-link or OAuth) and
-// Phase 5 adds the Snap Login Kit button. For now it's a static entry screen.
+// Server component. In demo mode (no Supabase) it shows the browse-first entry
+// screen. In live mode it shows a working email magic-link form. Phase 5 adds
+// the Snap Login Kit button.
 export default function LoginPage() {
+  const live = isBackendLive();
   return (
     <main
       className="mx-auto flex min-h-screen max-w-app flex-col justify-between bg-bg px-6 pb-10 pt-16 text-fg"
@@ -23,18 +27,24 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <Link
-          href="/discover"
-          className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-accent px-5 py-3.5 font-bold text-accent-ink active:scale-[0.97]"
-        >
-          👻 Continue with Snapchat
-        </Link>
-        <Link
-          href="/discover"
-          className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-line bg-surface px-5 py-3.5 font-bold text-fg active:scale-[0.97]"
-        >
-          Continue with email
-        </Link>
+        {live ? (
+          <EmailLoginForm />
+        ) : (
+          <>
+            <Link
+              href="/discover"
+              className="flex w-full items-center justify-center gap-2 rounded-[14px] bg-accent px-5 py-3.5 font-bold text-accent-ink active:scale-[0.97]"
+            >
+              👻 Continue with Snapchat
+            </Link>
+            <Link
+              href="/discover"
+              className="flex w-full items-center justify-center gap-2 rounded-[14px] border border-line bg-surface px-5 py-3.5 font-bold text-fg active:scale-[0.97]"
+            >
+              Continue with email
+            </Link>
+          </>
+        )}
         <Link href="/discover" className="py-2 text-center text-[0.85rem] font-semibold text-fg-soft">
           Browse first, no account needed →
         </Link>

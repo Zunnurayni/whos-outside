@@ -1,5 +1,7 @@
 import type { ActivityView, EventView } from "@/lib/types";
 import { SAMPLE_ACTIVITIES, SAMPLE_EVENTS } from "./sample";
+import { createClient } from "@/lib/supabase/server";
+import { mapActivityRow, mapEventRow, type ActivityRow, type EventRowJoined } from "./map-row";
 
 /**
  * Data access layer.
@@ -7,11 +9,17 @@ import { SAMPLE_ACTIVITIES, SAMPLE_EVENTS } from "./sample";
  * DEMO MODE (no Supabase env vars): returns the Yola sample set so the app
  * runs with zero setup.
  *
- * LIVE MODE: once you connect Supabase, replace the bodies below with real
- * queries. The function signatures stay the same, so no screen needs to
- * change. See docs/BUILD_GUIDE.md Phase 2 for the exact query to drop in —
- * a worked example is left in a comment inside getActivities().
+ * LIVE MODE (env vars set): runs real Supabase queries. On any error it falls
+ * back to sample data so a misconfigured env never shows a blank app. The
+ * return types never change, so no screen needs to be touched.
  */
+
+const ACTIVITY_SELECT = `
+  id, title, description, category, starts_at, ends_at,
+  estimated_cost_per_person, min_participants, max_participants, status, creator_id,
+  venues ( name, city ),
+  activity_participants ( user_id, status )
+`;
 
 export function isLiveMode(): boolean {
   return Boolean(
@@ -20,31 +28,48 @@ export function isLiveMode(): boolean {
 }
 
 export async function getActivities(): Promise<ActivityView[]> {
-  // LIVE MODE example (Phase 2) — uncomment once your schema is seeded:
-  //
-  //   const supabase = createClient(); // from "@/lib/supabase/server"
-  //   if (supabase) {
-  //     const { data } = await supabase
-  //       .from("activities")
-  //       .select("*, venues(name, city), activity_participants(user_id)")
-  //       .eq("status", "open")
-  //       .order("starts_at");
-  //     if (data) return data.map(mapRowToView);
-  //   }
-  //
-  // Until then, demo data:
-  return SAMPLE_ACTIVITIES;
+  const supabase = createClient();
+  if (!supabase) return SAMPLE_ACTIVITIES;
+
+  const { data, error } = await supabase
+    .from("activities")
+    .select(ACTIVITY_SELECT)
+    .in("status", ["open", "filled"])
+    .order("starts_at", { ascending: true });
+
+  if (error || !data) return SAMPLE_ACTIVITIES;
+  return (data as unknown as ActivityRow[]).map(mapActivityRow);
 }
 
 export async function getActivity(id: string): Promise<ActivityView | undefined> {
-  const all = await getActivities();
-  return all.find((a) => a.id === id);
+  const supabase = createClient();
+  if (!supabase) return SAMPLE_ACTIVITIES.find((a) => a.id === id);
+
+  const { data, error } = await supabase
+    .from("activities")
+    .select(ACTIVITY_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) return undefined;
+  if (!data) return SAMPLE_ACTIVITIES.find((a) => a.id === id);
+  return mapActivityRow(data as unknown as ActivityRow);
 }
 
 export async function getEvents(): Promise<EventView[]> {
-  return SAMPLE_EVENTS;
+  const supabase = createClient();
+  if (!supabase) return SAMPLE_EVENTS;
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, organiser_name, category, starts_at, venues ( name )")
+    .eq("status", "published")
+    .order("starts_at", { ascending: true });
+
+  if (error || !data) return SAMPLE_EVENTS;
+  return (data as unknown as EventRowJoined[]).map((row) => mapEventRow(row));
 }
 
-export function spotsLeft(a: ActivityView): number {
-  return a.max - a.crew.length;
-}
+// spotsLeft now lives in categories.ts (client-safe). Re-exported here so any
+// existing server-side import keeps working.
+export { spotsLeft } from "@/lib/categories";

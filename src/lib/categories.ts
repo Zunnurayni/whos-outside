@@ -1,4 +1,4 @@
-import type { Category, CategoryId } from "./types";
+import type { ActivityView, Category, CategoryId } from "./types";
 
 export const CATEGORIES: Category[] = [
   { id: "all", label: "All", emoji: "✨" },
@@ -26,4 +26,9 @@ export function categoryLabel(id: CategoryId): string {
 
 export function formatNaira(n: number): string {
   return n === 0 ? "Free" : "₦" + n.toLocaleString();
+}
+
+/** Open spots left on an activity. Client-safe (no server imports). */
+export function spotsLeft(a: ActivityView): number {
+  return a.max - a.crew.length;
 }

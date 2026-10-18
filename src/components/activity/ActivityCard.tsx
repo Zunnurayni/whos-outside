@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ActivityView } from "@/lib/types";
-import { categoryEmoji, categoryLabel, formatNaira } from "@/lib/categories";
-import { spotsLeft } from "@/lib/data/activities";
+import { categoryEmoji, categoryLabel, formatNaira, spotsLeft } from "@/lib/categories";
 import { Pill } from "@/components/ui/Pill";
 
 export function ActivityCard({ activity: a, joined = false }: { activity: ActivityView; joined?: boolean }) {

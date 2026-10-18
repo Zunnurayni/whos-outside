@@ -1,14 +1,21 @@
 import { notFound } from "next/navigation";
-import { getActivities, getActivity } from "@/lib/data/activities";
+import { getActivity } from "@/lib/data/activities";
+import { getProfiles } from "@/lib/data/profiles";
+import { getCurrentUser } from "@/lib/auth";
 import { ActivityDetailClient } from "./ActivityDetailClient";
 
-export async function generateStaticParams() {
-  const all = await getActivities();
-  return all.map((a) => ({ id: a.id }));
-}
+// Dynamic: join state and new activities must render per-request in live mode.
+export const dynamic = "force-dynamic";
 
 export default async function ActivityPage({ params }: { params: { id: string } }) {
   const activity = await getActivity(params.id);
   if (!activity) notFound();
-  return <ActivityDetailClient activity={activity} />;
+
+  const [profiles, me] = await Promise.all([getProfiles([activity.hostId]), getCurrentUser()]);
+  const host = profiles[activity.hostId];
+  // "me" is the demo id; in live mode it's the real auth id. Fall back to "me"
+  // so the demo path keeps working.
+  const currentUserId = me?.id ?? "me";
+
+  return <ActivityDetailClient activity={activity} host={host} currentUserId={currentUserId} />;
 }

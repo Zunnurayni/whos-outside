@@ -23,15 +23,17 @@ A polished, responsive, navigable app with realistic Yola sample data.
 
 ---
 
-## Phase 2 — Real backend (Supabase)
+## Phase 2 — Real backend (Supabase) ✅ (code shipped)
 
 Connect the database so every action persists. Refreshing the browser must not erase a created activity or an accepted join request.
 
-### 2.1 Run the schema
-Already written in `supabase/migrations/0001_init.sql`. Follow [SETUP.md](SETUP.md) Track B.
+**Status: the code is done and in the repo.** The app runs in two modes with no code change: demo (no env vars → Yola sample data) and live (env vars set → real Supabase). What you do now is the Supabase setup in [SETUP.md](SETUP.md) Track B, then add your keys to `.env.local`. The rest of this section documents what was built and where.
 
-### 2.2 Turn on live queries
-Open `src/lib/data/activities.ts`. Each function has a commented live-mode block. Replace the sample return with the real query. Worked example for `getActivities()`:
+### 2.1 Run the schema
+In `supabase/migrations/0001_init.sql`. Follow [SETUP.md](SETUP.md) Track B.
+
+### 2.2 Live queries — DONE
+`src/lib/data/activities.ts` now runs real queries with a sample fallback on any error. The row→view mapping lives in `src/lib/data/map-row.ts` (derives the day/time/emoji/status/map-position from DB columns). Profiles resolve through `src/lib/data/profiles.ts`. Original worked example kept below for reference:
 
 ```ts
 import { createClient } from "@/lib/supabase/server";
@@ -59,18 +61,29 @@ export async function getActivities(): Promise<ActivityView[]> {
 
 Because `ActivityView` is the contract, the Discover/Map/Detail screens keep working unchanged.
 
-### 2.3 Auth
-- Wire `src/app/(auth)/login/page.tsx` to Supabase Auth (email magic link is simplest to start).
-- The `on_auth_user_created` trigger already creates a profile row on signup.
-- Gate protected actions (create, join) in `src/middleware.ts` by redirecting unauthenticated users.
+### 2.3 Auth — DONE (email magic link)
+- `src/app/(auth)/login/page.tsx` shows a working email magic-link form in live mode (`EmailLoginForm.tsx`), and the browse-first entry screen in demo mode.
+- `src/app/(auth)/auth/callback/route.ts` exchanges the one-time code for a session.
+- `src/lib/auth.ts` gives `getCurrentUser()` and `isBackendLive()`; the profile screen has a Sign out action in live mode.
+- The `on_auth_user_created` trigger (in the migration) auto-creates the profile row on signup.
+- `src/middleware.ts` refreshes the session each request. To gate pages behind auth, add a redirect there — left open so people can browse before signing in, as the login screen offers.
 
-### 2.4 Writes
-- **Create activity:** `POST` from `CreateClient` → a Server Action that `insert`s into `activities` (+ a `venues` upsert).
-- **Join:** insert into `activity_participants` with status `requested`.
-- **Approve/decline:** organiser updates participant `status` (RLS already allows creator updates).
-- **Leave:** delete own participant row.
+### 2.4 Writes — DONE
+All in `src/lib/actions.ts` as Server Actions (auth-checked, RLS-enforced, with `revalidatePath`):
+- **Create activity:** `createActivity()` — upserts the venue, inserts the activity, joins the creator. Wired into `CreateClient`.
+- **Join:** `requestToJoin()` — inserts a `requested` participant. Wired into the activity detail CTA (optimistic).
+- **Approve / decline:** `respondToRequest()` — organiser updates participant status. Wired into the Crews request rows.
+- **Leave:** `leaveActivity()` — deletes own participant row.
+- **Check-in:** `confirmOnWay()` — flips status to `confirmed_on_way`. Wired into the Crews check-in button.
 
-**Acceptance:** create a plan, refresh — it's still there. Join a plan from a second account — the organiser sees the request.
+Every action returns `{ ok, message }`; when there is no backend it returns `message: "demo"` and the client shows the original demo toast, so the app still demos perfectly with no env vars.
+
+**Acceptance:** with Supabase connected, create a plan and refresh — it persists. Join from a second account — the organiser sees the request in Crews and can approve it.
+
+### 2.5 Known Phase 2 follow-ups (small, intentional)
+- Crew avatars on the detail screen show initials from real profiles for the host; other crew members fall back to a neutral initial until the detail page fetches all crew profiles (one extra query). Fine for launch, trivial to extend.
+- The Crews screen still reads `SAMPLE_CREWS` for its layout; the full crews-from-DB feed (with conversations and the check-in scheduler) is Phase 4. The approve/decline/check-in buttons already call the real actions.
+- New activities get a placeholder Yola-centre map point until Phase 3 geocodes the venue.
 
 ---
 

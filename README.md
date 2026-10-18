@@ -94,7 +94,7 @@ supabase/
 ## Status
 
 🟢 **Phase 1 complete** — navigable interface, sample data, PWA shell.
-⬜ Phase 2 — Supabase backend, auth, persistence (schema + RLS already written).
+🟢 **Phase 2 complete** — Supabase backend wired: live queries, email magic-link auth, and create/join/approve/leave/check-in write actions. Runs in demo mode with no env vars, live mode once Supabase keys are set. Set up your project per [docs/SETUP.md](docs/SETUP.md) Track B.
 ⬜ Phase 3 — real map + venue search.
 ⬜ Phase 4 — matching, coordination, notifications.
 ⬜ Phase 5 — Snap Kit (Login, Bitmoji, Creative Kit).

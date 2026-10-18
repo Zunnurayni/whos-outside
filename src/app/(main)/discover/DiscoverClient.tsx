@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { ActivityView, EventView } from "@/lib/types";
-import { categoryEmoji, categoryLabel, formatNaira } from "@/lib/categories";
-import { spotsLeft } from "@/lib/data/activities";
+import { categoryEmoji, categoryLabel, formatNaira, spotsLeft } from "@/lib/categories";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { ActivityCard } from "@/components/activity/ActivityCard";
@@ -15,9 +14,11 @@ import { Pill } from "@/components/ui/Pill";
 export function DiscoverClient({
   activities,
   events,
+  currentUserId = "me",
 }: {
   activities: ActivityView[];
   events: EventView[];
+  currentUserId?: string;
 }) {
   const [cat, setCat] = useState<string>("all");
   const feat = activities.find((a) => a.id === "a6") ?? activities[0];
@@ -84,7 +85,7 @@ export function DiscoverClient({
         </div>
         <div className="flex flex-col gap-[13px]">
           {list.map((a) => (
-            <ActivityCard key={a.id} activity={a} joined={a.crew.includes("me")} />
+            <ActivityCard key={a.id} activity={a} joined={a.crew.includes(currentUserId)} />
           ))}
         </div>
 

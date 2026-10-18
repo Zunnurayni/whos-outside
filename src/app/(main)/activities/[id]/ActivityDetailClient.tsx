@@ -1,34 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import type { ActivityView } from "@/lib/types";
+import type { ActivityView, Person } from "@/lib/types";
 import { categoryEmoji, categoryLabel, formatNaira } from "@/lib/categories";
-import { spotsLeft } from "@/lib/data/activities";
-import { personById } from "@/lib/data/sample";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { useToast } from "@/components/ui/Toast";
+import { requestToJoin, leaveActivity } from "@/lib/actions";
 
-export function ActivityDetailClient({ activity: a }: { activity: ActivityView }) {
+export function ActivityDetailClient({
+  activity: a,
+  host,
+  currentUserId,
+}: {
+  activity: ActivityView;
+  host: Person;
+  currentUserId: string;
+}) {
   const { show } = useToast();
-  const host = personById(a.hostId);
-  const isHost = a.hostId === "me";
+  const isHost = a.hostId === currentUserId;
   const [crew, setCrew] = useState<string[]>(a.crew);
-  const joined = crew.includes("me");
+  const [pending, startTransition] = useTransition();
+  const joined = crew.includes(currentUserId);
   const sl = a.max - crew.length;
   const pct = Math.min(100, Math.round((crew.length / a.max) * 100));
 
   const join = () => {
-    setCrew((c) => [...c, "me"]);
-    show(`Request sent to ${host.name} 🎉`, "👍");
+    // optimistic
+    setCrew((c) => (c.includes(currentUserId) ? c : [...c, currentUserId]));
+    startTransition(async () => {
+      const res = await requestToJoin(a.id);
+      if (res.message === "demo") show(`Request sent to ${host.name} 🎉`, "👍");
+      else if (res.ok) show(res.message, "👍");
+      else {
+        setCrew((c) => c.filter((p) => p !== currentUserId));
+        show(res.message, "⚠️");
+      }
+    });
   };
   const leave = () => {
-    setCrew((c) => c.filter((p) => p !== "me"));
-    show("You left this plan", "👋");
+    setCrew((c) => c.filter((p) => p !== currentUserId));
+    startTransition(async () => {
+      const res = await leaveActivity(a.id);
+      if (res.message === "demo") show("You left this plan", "👋");
+      else if (res.ok) show(res.message, "👋");
+      else {
+        setCrew((c) => (c.includes(currentUserId) ? c : [...c, currentUserId]));
+        show(res.message, "⚠️");
+      }
+    });
   };
 
   const seats: JSX.Element[] = crew.map((p) => <Avatar key={p} personId={p} size={42} />);
@@ -142,11 +166,13 @@ export function ActivityDetailClient({ activity: a }: { activity: ActivityView }
               <Button variant="violet">Manage crew & requests</Button>
             </Link>
           ) : joined ? (
-            <Button variant="secondary" onClick={leave}>
+            <Button variant="secondary" onClick={leave} disabled={pending}>
               ✓ You&apos;re in · tap to leave
             </Button>
           ) : (
-            <Button onClick={join}>Request to join · {formatNaira(a.cost)}</Button>
+            <Button onClick={join} disabled={pending}>
+              Request to join · {formatNaira(a.cost)}
+            </Button>
           )}
           <Button
             variant="ghostline"
