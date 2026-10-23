@@ -21,7 +21,11 @@ insert into public.venues (name, category, address, city, location) values
   ('BCH Hub Yola',               'tech',     'Yola Bypass, Jimeta',                 'Yola', st_setsrid(st_makepoint(12.4550, 9.2650), 4326)),
   ('Adamawa Arts Council',       'arts',     'Yola Town, near Lamido Palace',       'Yola', st_setsrid(st_makepoint(12.4390, 9.2010), 4326)),
   ('Rooftop lounge, Jimeta',     'nightlife','Atiku Abubakar Way, Jimeta',          'Yola', st_setsrid(st_makepoint(12.4620, 9.2780), 4326)),
-  ('Yola IBB Square',            'tech',     'IBB Square, Yola',                    'Yola', st_setsrid(st_makepoint(12.4410, 9.2040), 4326))
+  ('Yola IBB Square',            'tech',     'IBB Square, Yola',                    'Yola', st_setsrid(st_makepoint(12.4410, 9.2040), 4326)),
+  ('Modibbo Adama University',   'tech',     'MAU (MAUTECH) campus, Girei',         'Yola', st_setsrid(st_makepoint(12.4920, 9.3450), 4326)),
+  ('American University (AUN)',  'tech',     'AUN campus, Lamido Zubairu Way',      'Yola', st_setsrid(st_makepoint(12.4690, 9.2340), 4326)),
+  ('Shoprite Yola Mall',         'food',     'Jimeta, Atiku Abubakar Way',          'Yola', st_setsrid(st_makepoint(12.4640, 9.2700), 4326)),
+  ('Jimeta bypass fitness park', 'sports',   'Jimeta bypass, Yola',                 'Yola', st_setsrid(st_makepoint(12.4560, 9.2600), 4326))
 on conflict do nothing;
 
 -- ── Organised events (published, public) ────────────────────
