@@ -1,7 +1,7 @@
 {
   "name": "Who's Outside?",
   "short_name": "Who's Outside",
-  "description": "Find your people. Experience more of life.",
+  "description": "Who's outside? Find out. See what's on in Yola, find your crew, and show up.",
   "start_url": "/discover",
   "display": "standalone",
   "background_color": "#141210",

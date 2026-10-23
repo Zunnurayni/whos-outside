@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Share2, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useToast } from "@/components/ui/Toast";
+import { Logo } from "@/components/Logo";
 
 interface Props {
   variant?: "home" | "title" | "detail";
@@ -63,9 +64,7 @@ export function TopBar({ variant = "title", title = "", subtitle, onShare }: Pro
       ) : variant === "home" ? (
         <>
           <Link href="/discover" className="flex items-center gap-2.5 focus:outline-none">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-accent text-[18px] text-accent-ink shadow-sm">
-              👻
-            </span>
+            <Logo size={32} rounded={9} className="block shrink-0" />
             <div className="flex flex-col">
               <span className="font-display text-[1.12rem] font-bold tracking-tight text-fg leading-none">
                 Who&apos;s Outside?

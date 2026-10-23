@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { isBackendLive } from "@/lib/auth";
+import { Logo } from "@/components/Logo";
 import { EmailLoginForm } from "./EmailLoginForm";
 
 // Server component. In demo mode (no Supabase) it shows the browse-first entry
@@ -13,20 +14,23 @@ export default function LoginPage() {
       style={{ paddingLeft: "max(24px, env(safe-area-inset-left,0px))", paddingRight: "max(24px, env(safe-area-inset-right,0px))" }}
     >
       <div>
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-accent text-4xl text-accent-ink shadow-card">
-          👻
+        <div className="wo-rise wo-rise-1">
+          <div className="wo-float wo-glow inline-block rounded-2xl">
+            <Logo size={64} rounded={16} className="block" />
+          </div>
         </div>
-        <h1 className="mt-8 text-[2.2rem] leading-tight">
-          Who&apos;s
-          <br />
-          Outside?
+        <h1 className="mt-8 text-[2.4rem] font-extrabold leading-[1.05] wo-rise wo-rise-2">
+          <span className="wo-sheen-text">Who&apos;s outside?</span>
         </h1>
-        <p className="mt-3 max-w-[28ch] text-[1.05rem] text-fg-soft">
-          Find your people. Experience more of life.
+        <p className="mt-2 text-[1.5rem] font-bold text-accent wo-rise wo-rise-3">
+          Find out.
+        </p>
+        <p className="mt-4 max-w-[30ch] text-[1.02rem] text-fg-soft wo-rise wo-rise-4">
+          See what&apos;s on in Yola, find your crew, and show up.
         </p>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 wo-rise wo-rise-4">
         {live ? (
           <EmailLoginForm />
         ) : (

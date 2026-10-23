@@ -173,3 +173,71 @@ img {
 .mapboxgl-ctrl-top-right {
   top: 56px;
 }
+
+/* ============================================================
+   Launch motion — keyframes used by the splash + login entrance.
+   Kept in CSS (not JS) so they run on first paint with no flash.
+   All respect prefers-reduced-motion below.
+   ============================================================ */
+@keyframes wo-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes wo-pop {
+  0%   { opacity: 0; transform: scale(0.82) rotate(-6deg); }
+  60%  { opacity: 1; transform: scale(1.06) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes wo-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes wo-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.0), 0 0 22px 2px rgba(255, 212, 0, 0.18); }
+  50%      { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.0), 0 0 46px 8px rgba(255, 212, 0, 0.42); }
+}
+@keyframes wo-sheen {
+  from { background-position: -140% 0; }
+  to   { background-position: 240% 0; }
+}
+@keyframes wo-splash-out {
+  0%, 70% { opacity: 1; visibility: visible; }
+  100%    { opacity: 0; visibility: hidden; }
+}
+
+/* entrance helpers */
+.wo-rise   { opacity: 0; animation: wo-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.wo-rise-1 { animation-delay: 0.05s; }
+.wo-rise-2 { animation-delay: 0.16s; }
+.wo-rise-3 { animation-delay: 0.28s; }
+.wo-rise-4 { animation-delay: 0.42s; }
+.wo-pop    { animation: wo-pop 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.wo-float  { animation: wo-float 3.4s ease-in-out infinite; }
+
+/* gradient-sheen text (the tagline shimmer) */
+.wo-sheen-text {
+  background: linear-gradient(
+    100deg,
+    var(--fg) 0%, var(--fg) 38%,
+    var(--accent) 50%,
+    var(--fg) 62%, var(--fg) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wo-sheen 2.6s ease-in-out 0.6s infinite;
+}
+
+/* the ghost mark's glow — a soft pulsing aura, reads as energy in any frame */
+.wo-glow {
+  animation: wo-glow 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wo-rise, .wo-pop, .wo-float, .wo-sheen-text, .wo-glow {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

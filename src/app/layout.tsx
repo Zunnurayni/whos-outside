@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
+import { Splash } from "@/components/Splash";
 import "./globals.css";
 
 // Fonts are loaded via a <link> in <head> (see below) rather than next/font,
@@ -8,7 +9,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Who's Outside?",
-  description: "Find your people. Experience more of life. A social discovery platform.",
+  description: "Who's outside? Find out. See what's on in Yola, find your crew, and show up.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body suppressHydrationWarning>
+        <Splash />
         {children}
         <Analytics />
       </body>
