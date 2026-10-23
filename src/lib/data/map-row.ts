@@ -21,6 +21,7 @@ export interface ActivityRow {
   status: string;
   creator_id: string;
   venues: { name: string | null; city: string | null; lat: number | null; lng: number | null } | null;
+  creator?: { display_name: string | null; handle: string | null } | null;
   activity_participants: { user_id: string; status: string }[] | null;
 }
 
@@ -91,6 +92,7 @@ export function mapActivityRow(row: ActivityRow): ActivityView {
     area: row.venues?.name ? row.venues.name.split(",").pop()?.trim() ?? "Yola" : "Yola",
     city: row.venues?.city ?? "Yola",
     hostId: row.creator_id,
+    hostName: row.creator?.display_name ?? undefined,
     day: dayLabel(row.starts_at),
     time: timeLabel(row.starts_at),
     duration: durationLabel(row.starts_at, row.ends_at),
@@ -103,8 +105,35 @@ export function mapActivityRow(row: ActivityRow): ActivityView {
     mapY: pos.y,
     lat: row.venues?.lat ?? null,
     lng: row.venues?.lng ?? null,
+    themeGradient: CATEGORY_GRADIENT[category] ?? CATEGORY_GRADIENT.nightlife,
+    vibes: CATEGORY_VIBES[category] ?? [],
   };
 }
+
+// Per-category visual + vibe treatment so live DB activities get the same
+// rich cards as the sample data (coloured banner + vibe tags), instead of
+// falling back to the plain grey default.
+const CATEGORY_GRADIENT: Record<string, string> = {
+  food: "from-amber-950/80 via-orange-950/40 to-neutral-900",
+  sports: "from-emerald-950/80 via-teal-950/40 to-neutral-900",
+  outdoors: "from-green-950/80 via-lime-950/40 to-neutral-900",
+  tech: "from-blue-950/80 via-indigo-950/40 to-neutral-900",
+  arts: "from-pink-950/80 via-purple-950/40 to-neutral-900",
+  music: "from-purple-950/80 via-fuchsia-950/40 to-neutral-900",
+  gaming: "from-violet-950/80 via-indigo-950/40 to-neutral-900",
+  nightlife: "from-orange-950/80 via-violet-950/40 to-neutral-900",
+};
+
+const CATEGORY_VIBES: Record<string, string[]> = {
+  food: ["Good eats", "Split bill", "First-timers welcome"],
+  sports: ["High energy", "All skill levels", "Bring water"],
+  outdoors: ["Scenic", "Relaxed pace", "Golden hour"],
+  tech: ["Beginner friendly", "Networking", "Bring a laptop"],
+  arts: ["Creative flow", "Quiet vibes", "No experience needed"],
+  music: ["Aux rotation", "Good vibes", "Night owl"],
+  gaming: ["Casual", "Co-op", "Snacks"],
+  nightlife: ["Social", "Late night", "Dress up"],
+};
 
 const EVENT_EMOJI: Record<string, string> = {
   tech: "🎪",

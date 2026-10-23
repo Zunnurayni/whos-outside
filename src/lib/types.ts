@@ -39,6 +39,7 @@ export interface ActivityView {
   area: string;
   city: string;
   hostId: string;
+  hostName?: string;
   day: string;
   time: string;
   duration: string;

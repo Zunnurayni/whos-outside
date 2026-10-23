@@ -18,6 +18,7 @@ const ACTIVITY_SELECT = `
   id, title, description, category, starts_at, ends_at,
   estimated_cost_per_person, min_participants, max_participants, status, creator_id,
   venues ( name, city, lat, lng ),
+  creator:profiles!activities_creator_id_fkey ( display_name, handle ),
   activity_participants ( user_id, status )
 `;
 

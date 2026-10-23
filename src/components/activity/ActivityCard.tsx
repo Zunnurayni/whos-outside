@@ -12,7 +12,9 @@ export function ActivityCard({
   activity: ActivityView;
   joined?: boolean;
 }) {
-  const host = personById(a.hostId);
+  // Prefer the real host name (live DB); fall back to the sample people map
+  // for demo mode, then to a friendly default.
+  const hostName = a.hostName ?? personById(a.hostId).name;
   const sl = spotsLeft(a);
   const pct = Math.min(100, Math.round((a.crew.length / a.max) * 100));
   const isUrgent = sl <= 2 && a.status === "filling";
@@ -38,7 +40,7 @@ export function ActivityCard({
                 {categoryLabel(a.category)}
               </span>
               <span className="text-[12px] font-medium text-white/90">
-                Hosted by {host.name}
+                Hosted by {hostName}
               </span>
             </div>
           </div>
