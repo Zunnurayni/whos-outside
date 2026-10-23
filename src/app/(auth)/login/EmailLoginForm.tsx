@@ -87,7 +87,7 @@ export function EmailLoginForm() {
     setState("working");
     setError("");
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     });
     if (error) {
       setState("idle");

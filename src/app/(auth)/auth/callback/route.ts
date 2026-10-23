@@ -11,10 +11,12 @@ import { createClient } from "@/lib/supabase/server";
 // that case is handled by the client fallback at /auth/confirm.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const next = searchParams.get("next") ?? "/discover";
+  const type = searchParams.get("type") as EmailOtpType | null;
+  // A password-recovery link must land on the set-new-password screen, not in
+  // the app. Everything else goes to ?next (default /discover).
+  const next = searchParams.get("next") ?? (type === "recovery" ? "/auth/reset-password" : "/discover");
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
-  const type = searchParams.get("type") as EmailOtpType | null;
 
   const supabase = createClient();
 
@@ -29,6 +31,8 @@ export async function GET(request: Request) {
   }
 
   // No server-readable token — hand off to the client page, which can read a
-  // token carried in the URL hash fragment.
-  return NextResponse.redirect(`${origin}/auth/confirm${request.url.includes("#") ? "" : ""}`);
+  // token carried in the URL hash fragment. Carry the type so recovery links
+  // still reach the reset screen.
+  const confirmNext = type === "recovery" ? "/auth/reset-password" : next;
+  return NextResponse.redirect(`${origin}/auth/confirm?next=${encodeURIComponent(confirmNext)}`);
 }

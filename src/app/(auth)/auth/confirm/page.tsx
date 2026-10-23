@@ -15,36 +15,39 @@ export default function ConfirmPage() {
   useEffect(() => {
     const run = async () => {
       const supabase = createClient();
+      const qs = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.startsWith("#")
+        ? new URLSearchParams(window.location.hash.slice(1))
+        : null;
+
+      // Where to send them once signed in. A recovery link must reach the
+      // set-new-password screen.
+      const isRecovery = qs.get("type") === "recovery" || hash?.get("type") === "recovery";
+      const dest = qs.get("next") || (isRecovery ? "/auth/reset-password" : "/discover");
+
       if (!supabase) {
         router.replace("/discover");
         return;
       }
 
       // 1. Hash-fragment tokens (#access_token / #refresh_token)
-      const hash = window.location.hash.startsWith("#")
-        ? new URLSearchParams(window.location.hash.slice(1))
-        : null;
       const access_token = hash?.get("access_token");
       const refresh_token = hash?.get("refresh_token");
       if (access_token && refresh_token) {
         const { error } = await supabase.auth.setSession({ access_token, refresh_token });
         if (!error) {
-          router.replace("/discover");
+          router.replace(dest);
           return;
         }
       }
 
       // 2. ?token_hash=&type= in the query string
-      const qs = new URLSearchParams(window.location.search);
       const token_hash = qs.get("token_hash");
       const type = qs.get("type");
       if (token_hash && type) {
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash,
-          type: type as any,
-        });
+        const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any });
         if (!error) {
-          router.replace("/discover");
+          router.replace(dest);
           return;
         }
       }
@@ -54,11 +57,11 @@ export default function ConfirmPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        router.replace("/discover");
+        router.replace(dest);
         return;
       }
 
-      setMsg("That sign-in link didn't work. Please request a new one.");
+      setMsg("That link didn't work. Please request a new one.");
       setTimeout(() => router.replace("/login?error=auth"), 2500);
     };
     run();
