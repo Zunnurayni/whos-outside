@@ -49,3 +49,18 @@ export async function getProfiles(ids: string[]): Promise<Record<string, Person>
   for (const row of data ?? []) out[row.id] = rowToPerson(row);
   return out;
 }
+
+/** The current user's chosen interest categories (empty in demo mode). */
+export async function getMyInterests(): Promise<string[]> {
+  const supabase = createClient();
+  if (!supabase) return [];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("user_interests")
+    .select("category")
+    .eq("user_id", user.id);
+  return (data ?? []).map((r) => r.category);
+}

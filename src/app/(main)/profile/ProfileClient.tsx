@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Sparkles, MapPin, Award, ShieldCheck, Flame, Zap, Share2, Check } from "lucide-react";
 import { ME } from "@/lib/data/sample";
+import { CATEGORIES } from "@/lib/categories";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
-import { signOut } from "@/lib/actions";
+import { signOut, saveInterests } from "@/lib/actions";
 
 const BADGES = [
   { e: "🎉", l: "First Outing", on: true, desc: "Broke the ice" },
@@ -30,10 +31,12 @@ export function ProfileClient({
   live = false,
   displayName = ME.name,
   handle = ME.handle ?? "@Nurain_Dev",
+  initialInterests = [],
 }: {
   live?: boolean;
   displayName?: string;
   handle?: string;
+  initialInterests?: string[];
 }) {
   const { show } = useToast();
   const [snapConnected, setSnapConnected] = useState(false);
@@ -116,28 +119,9 @@ export function ProfileClient({
           <StatBox num="100%" label="Show Rate" highlight />
         </div>
 
-        {/* Interests */}
-        <div className="mt-6">
-          <div className="mb-2.5 flex items-baseline justify-between">
-            <h2 className="font-display text-[1.05rem] font-bold text-fg">Interests & Vibes</h2>
-            <button
-              onClick={() => show("Interests updated!", "✨")}
-              className="text-xs font-bold text-violet hover:underline"
-            >
-              Edit
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {ME.interests?.map((i) => (
-              <span
-                key={i}
-                className="rounded-lg bg-surface-2 px-3 py-1 text-xs font-bold text-fg-soft"
-              >
-                #{i}
-              </span>
-            ))}
-          </div>
-        </div>
+        {/* Interests — tap to pick what you're into; powers "For you" ranking */}
+        <InterestsPicker initial={initialInterests} />
+
 
         {/* Badges / Street Cred */}
         <div className="mt-6">
@@ -284,6 +268,63 @@ function ToggleRow({
           style={{ transform: on ? "translateX(20px)" : "none" }}
         />
       </button>
+    </div>
+  );
+}
+
+function InterestsPicker({ initial }: { initial: string[] }) {
+  const { show } = useToast();
+  const [selected, setSelected] = useState<string[]>(initial);
+  const [pending, startTransition] = useTransition();
+  const cats = CATEGORIES.filter((c) => c.id !== "all");
+
+  const dirty =
+    selected.length !== initial.length || selected.some((c) => !initial.includes(c));
+
+  const toggle = (id: string) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
+  const save = () =>
+    startTransition(async () => {
+      const res = await saveInterests(selected);
+      show(res.message === "demo" ? "Interests saved ✨" : res.message, res.ok || res.message === "demo" ? "✨" : "⚠️");
+    });
+
+  return (
+    <div className="mt-6">
+      <div className="mb-2.5 flex items-baseline justify-between">
+        <h2 className="font-display text-[1.05rem] font-bold text-fg">Interests & Vibes</h2>
+        {dirty && (
+          <button
+            onClick={save}
+            disabled={pending}
+            className="text-xs font-bold text-violet hover:underline disabled:opacity-50"
+          >
+            {pending ? "Saving…" : "Save"}
+          </button>
+        )}
+      </div>
+      <p className="mb-3 text-xs text-fg-soft">
+        Pick what you&apos;re into — it shapes the plans we surface for you.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {cats.map((c) => {
+          const on = selected.includes(c.id);
+          return (
+            <button
+              key={c.id}
+              onClick={() => toggle(c.id)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[0.83rem] font-semibold transition-colors ${
+                on
+                  ? "border-violet bg-violet text-white"
+                  : "border-line bg-surface text-fg-soft"
+              }`}
+            >
+              {c.emoji} {c.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

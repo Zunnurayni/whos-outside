@@ -20,17 +20,19 @@ export function DiscoverClient({
   activities,
   events,
   currentUserId = "me",
+  personalised = false,
 }: {
   activities: ActivityView[];
   events: EventView[];
   currentUserId?: string;
+  personalised?: boolean;
 }) {
   const { show } = useToast();
   const [cat, setCat] = useState<string>("all");
   const [vibe, setVibe] = useState<VibeFilter>("all");
   const [interestedEvents, setInterestedEvents] = useState<Record<string, boolean>>({});
 
-  // Spotlight activity (tonight's hottest plan)
+  // Spotlight = the top-ranked plan (a1 in demo mode, best-for-you when live)
   const feat = activities.find((a) => a.id === "a1") ?? activities[0];
   const featHost = feat ? personById(feat.hostId) : null;
 
@@ -227,7 +229,9 @@ export function DiscoverClient({
           <h2 className="font-display text-[1.18rem] font-bold text-fg">
             {cat === "all"
               ? vibe === "all"
-                ? "Happening Near You"
+                ? personalised
+                  ? "For You"
+                  : "Happening Near You"
                 : `${vibe.charAt(0).toUpperCase() + vibe.slice(1)} Plans`
               : `${categoryLabel(cat as any)} near you`}
           </h2>
@@ -235,6 +239,11 @@ export function DiscoverClient({
             {filteredList.length} active
           </span>
         </div>
+        {personalised && cat === "all" && vibe === "all" && (
+          <p className="-mt-2 mb-3 text-xs text-fg-soft">
+            Ranked by your interests, how soon they start, and distance.
+          </p>
+        )}
 
         {/* Activities List */}
         {filteredList.length === 0 ? (

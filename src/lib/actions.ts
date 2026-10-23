@@ -193,3 +193,26 @@ export async function confirmOnWay(activityId: string): Promise<ActionResult> {
   revalidatePath("/crews");
   return { ok: true, message: "You're confirmed — meeting pin unlocked 📍" };
 }
+
+// ── Interests ─────────────────────────────────────────────────────────────
+export async function saveInterests(categories: string[]): Promise<ActionResult> {
+  const supabase = createClient();
+  if (!supabase) return noBackend();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, message: "Please sign in." };
+
+  // Replace the user's interest set with the chosen categories.
+  await supabase.from("user_interests").delete().eq("user_id", user.id);
+  if (categories.length) {
+    const rows = categories.map((category) => ({ user_id: user.id, category }));
+    const { error } = await supabase.from("user_interests").insert(rows);
+    if (error) return { ok: false, message: error.message };
+  }
+
+  revalidatePath("/profile");
+  revalidatePath("/discover");
+  return { ok: true, message: "Interests saved ✨" };
+}
