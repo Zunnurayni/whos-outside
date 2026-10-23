@@ -156,7 +156,20 @@ img {
 .wo-pin-price {
   color: var(--violet);
 }
+.wo-pin-dist {
+  color: var(--fg-faint);
+  font-weight: 600;
+  padding-left: 4px;
+  border-left: 1px solid var(--line);
+}
+.wo-pin-dist:empty {
+  display: none;
+}
 /* keep Mapbox controls clear of the floating card and tab bar */
 .mapboxgl-ctrl-bottom-right {
   bottom: 220px;
+}
+/* lift the geolocate + zoom controls clear of the floating card too */
+.mapboxgl-ctrl-top-right {
+  top: 56px;
 }
