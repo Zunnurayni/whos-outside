@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { ActivityView, Person } from "@/lib/types";
 import { categoryLabel, formatNaira } from "@/lib/categories";
+import { computeCost } from "@/lib/cost";
 import { personById } from "@/lib/data/sample";
 import { TopBar } from "@/components/layout/TopBar";
 import { Pad } from "@/components/layout/AppShell";
@@ -40,6 +41,17 @@ export function ActivityDetailClient({
   const sl = a.max - crew.length;
   const pct = Math.min(100, Math.round((crew.length / a.max) * 100));
   const isLockedIn = crew.length >= a.min;
+
+  // Cost breakdown using the plan's model. For an even split we divide by the
+  // crew limit (what the host set), so the "each" figure is stable and matches
+  // what everyone agreed to, not a moving number as people join.
+  const cost = computeCost({
+    mode: a.costMode ?? "even",
+    totalCost: a.totalCost ?? (a.costMode ? 0 : a.cost * a.max),
+    hostContribution: a.hostContribution ?? 0,
+    crewSize: a.max,
+    sponsorName: a.sponsorName,
+  });
 
   const join = () => {
     setCrew((c) => (c.includes(currentUserId) ? c : [...c, currentUserId]));
@@ -147,9 +159,9 @@ export function ActivityDetailClient({
           />
           <StatBox
             icon={Wallet}
-            label="Cost / Person"
-            main={a.cost === 0 ? "Free" : formatNaira(a.cost)}
-            sub={a.cost === 0 ? "No fee required" : "Split at venue"}
+            label="Your share"
+            main={cost.perPerson === 0 ? "Free" : formatNaira(cost.perPerson)}
+            sub={cost.hostLine}
           />
           <StatBox
             icon={MapPin}
@@ -281,7 +293,7 @@ export function ActivityDetailClient({
             >
               <span>Request to Join</span>
               <span aria-hidden="true">·</span>
-              <span>{a.cost === 0 ? "Free" : formatNaira(a.cost)}</span>
+              <span>{cost.perPerson === 0 ? "Free" : formatNaira(cost.perPerson)}</span>
             </button>
           )}
 

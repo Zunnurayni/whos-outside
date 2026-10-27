@@ -9,6 +9,7 @@ import { Pad } from "@/components/layout/AppShell";
 import { useToast } from "@/components/ui/Toast";
 import { VenueSearch } from "@/components/activity/VenueSearch";
 import { createActivity } from "@/lib/actions";
+import { computeCost, type CostMode } from "@/lib/cost";
 
 const PRESETS = [
   { emoji: "🍢", title: "Suya run at Jimeta Market", cat: "food", cost: 3000, size: 5 },
@@ -44,7 +45,10 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
   const [group, setGroup] = useState(5);
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
-  const [cost, setCost] = useState("");
+  const [cost, setCost] = useState(""); // used as "total cost" for even/host_share
+  const [costMode, setCostMode] = useState<CostMode>("even");
+  const [hostAmount, setHostAmount] = useState(""); // host's contribution (host_share)
+  const [sponsorName, setSponsorName] = useState(""); // sponsored mode
   const [time, setTime] = useState("7:30 PM");
   const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [pending, startTransition] = useTransition();
@@ -67,13 +71,26 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
       return;
     }
     const joinSel = val("c-join");
+    const totalCost = Number((cost || "0").replace(/[^\d.]/g, "")) || 0;
+    const hostContribution = Number((hostAmount || "0").replace(/[^\d.]/g, "")) || 0;
+    const breakdown = computeCost({
+      mode: costMode,
+      totalCost,
+      hostContribution,
+      crewSize: group,
+      sponsorName,
+    });
     const payload = {
       title: title.trim(),
       description: val("c-desc"),
       category: cat,
       venueName: venue,
       startsAt: toIso(val("c-date") || "Today", time || "7:30 PM"),
-      cost: Number((cost || "0").replace(/[^\d.]/g, "")) || 0,
+      cost: Math.round(breakdown.perPerson), // computed per-head, keeps existing reads working
+      costMode,
+      totalCost,
+      hostContribution: costMode === "host_share" ? hostContribution : 0,
+      sponsorName: costMode === "sponsored" ? sponsorName.trim() || null : null,
       maxParticipants: group,
       minParticipants: Math.min(3, group),
       joinRule: joinSel.startsWith("Invite") ? "invite" : joinSel.startsWith("Approve") ? "approve" : "open",
@@ -97,6 +114,22 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
   const inputClass =
     "w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-[0.95rem] text-fg placeholder:text-fg-faint focus:border-violet focus:outline-none focus:ring-1 focus:ring-violet transition-colors";
   const labelClass = "mb-1.5 flex items-center gap-1.5 text-[0.8rem] font-bold text-fg-soft";
+
+  // Live cost breakdown shown under the cost section as the host types.
+  const breakdown = computeCost({
+    mode: costMode,
+    totalCost: Number((cost || "0").replace(/[^\d.]/g, "")) || 0,
+    hostContribution: Number((hostAmount || "0").replace(/[^\d.]/g, "")) || 0,
+    crewSize: group,
+    sponsorName,
+  });
+
+  const COST_MODES: { id: CostMode; label: string }[] = [
+    { id: "even", label: "Split evenly" },
+    { id: "host_share", label: "I cover a share" },
+    { id: "sponsored", label: "On me / sponsored" },
+    { id: "byo", label: "Free, bring your own" },
+  ];
 
   return (
     <>
@@ -195,7 +228,7 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
           />
           <div className="mt-1.5 flex items-center gap-1.5 text-[0.74rem] text-fg-faint">
             <ShieldCheck className="h-3.5 w-3.5 text-good" />
-            Only public spots are shown — never your home or private coordinates.
+            Only public spots are shown, never your home or private coordinates.
           </div>
         </div>
 
@@ -228,45 +261,128 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
           </div>
         </div>
 
-        {/* Cost & Group Size */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass} htmlFor="c-cost">
-              <Wallet className="h-3.5 w-3.5 text-violet" />
-              Cost / Person (₦)
-            </label>
-            <input
-              id="c-cost"
-              className={inputClass}
-              placeholder="0 for free"
-              value={cost}
-              onChange={(e) => setCost(e.target.value)}
-            />
-          </div>
-          <div>
-            <span className={labelClass}>
-              <Users className="h-3.5 w-3.5 text-violet" />
-              Crew Limit
+        {/* Crew Limit */}
+        <div className="mt-4">
+          <span className={labelClass}>
+            <Users className="h-3.5 w-3.5 text-violet" />
+            Crew Limit
+          </span>
+          <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2">
+            <button
+              onClick={() => setGroup((g) => Math.max(2, g - 1))}
+              className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
+              aria-label="Fewer"
+            >
+              −
+            </button>
+            <span className="font-display text-[1.1rem] font-bold text-fg tabular-nums">
+              {group} people
             </span>
-            <div className="flex items-center justify-between rounded-xl border border-line bg-surface px-3 py-2">
+            <button
+              onClick={() => setGroup((g) => Math.min(20, g + 1))}
+              className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
+              aria-label="More"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Who pays */}
+        <div className="mt-4">
+          <span className={labelClass}>
+            <Wallet className="h-3.5 w-3.5 text-violet" />
+            Who pays?
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            {COST_MODES.map((m) => (
               <button
-                onClick={() => setGroup((g) => Math.max(2, g - 1))}
-                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
-                aria-label="Fewer"
+                key={m.id}
+                type="button"
+                onClick={() => setCostMode(m.id)}
+                className={`rounded-xl border px-3 py-2.5 text-[0.82rem] font-semibold transition-colors ${
+                  costMode === m.id
+                    ? "border-violet bg-violet/10 text-violet"
+                    : "border-line bg-surface text-fg-soft"
+                }`}
               >
-                −
+                {m.label}
               </button>
-              <span className="font-display text-[1.1rem] font-bold text-fg tabular-nums">
-                {group}
-              </span>
-              <button
-                onClick={() => setGroup((g) => Math.min(20, g + 1))}
-                className="grid h-8 w-8 place-items-center rounded-lg bg-surface-2 text-lg font-bold text-fg active:scale-90"
-                aria-label="More"
-              >
-                +
-              </button>
+            ))}
+          </div>
+
+          {/* mode-specific inputs */}
+          {(costMode === "even" || costMode === "host_share") && (
+            <div className="mt-3">
+              <label className="mb-1.5 block text-[0.78rem] font-bold text-fg-soft" htmlFor="c-cost">
+                Total cost of the plan (₦)
+              </label>
+              <input
+                id="c-cost"
+                inputMode="numeric"
+                className={inputClass}
+                placeholder="e.g. 5000"
+                value={cost}
+                onChange={(e) => setCost(e.target.value)}
+              />
             </div>
+          )}
+
+          {costMode === "host_share" && (
+            <div className="mt-3">
+              <label className="mb-1.5 block text-[0.78rem] font-bold text-fg-soft" htmlFor="c-hostamt">
+                How much are you putting in? (₦)
+              </label>
+              <input
+                id="c-hostamt"
+                inputMode="numeric"
+                className={inputClass}
+                placeholder="e.g. 50000"
+                value={hostAmount}
+                onChange={(e) => setHostAmount(e.target.value)}
+              />
+            </div>
+          )}
+
+          {costMode === "sponsored" && (
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1.5 block text-[0.78rem] font-bold text-fg-soft" htmlFor="c-cost">
+                  Total cost (₦, optional)
+                </label>
+                <input
+                  id="c-cost"
+                  inputMode="numeric"
+                  className={inputClass}
+                  placeholder="optional"
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[0.78rem] font-bold text-fg-soft" htmlFor="c-sponsor">
+                  Sponsor name (optional)
+                </label>
+                <input
+                  id="c-sponsor"
+                  className={inputClass}
+                  placeholder="leave blank = you"
+                  value={sponsorName}
+                  onChange={(e) => setSponsorName(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* live breakdown */}
+          <div className="mt-3 rounded-xl border border-violet/30 bg-violet/5 px-3.5 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[1.05rem]">💸</span>
+              <span className="font-display text-[1.05rem] font-bold text-fg">
+                {breakdown.memberLine}
+              </span>
+            </div>
+            <p className="mt-1 text-[0.78rem] text-fg-soft">{breakdown.hostLine}</p>
           </div>
         </div>
 

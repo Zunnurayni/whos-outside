@@ -16,6 +16,10 @@ export interface ActivityRow {
   starts_at: string;
   ends_at: string | null;
   estimated_cost_per_person: number | string | null;
+  cost_mode?: string | null;
+  total_cost?: number | string | null;
+  host_contribution?: number | string | null;
+  sponsor_name?: string | null;
   min_participants: number;
   max_participants: number;
   status: string;
@@ -97,6 +101,10 @@ export function mapActivityRow(row: ActivityRow): ActivityView {
     time: timeLabel(row.starts_at),
     duration: durationLabel(row.starts_at, row.ends_at),
     cost,
+    costMode: (row.cost_mode as ActivityView["costMode"]) ?? "even",
+    totalCost: Number(row.total_cost ?? 0),
+    hostContribution: Number(row.host_contribution ?? 0),
+    sponsorName: row.sponsor_name ?? null,
     min: row.min_participants,
     max: row.max_participants,
     crew,

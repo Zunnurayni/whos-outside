@@ -43,7 +43,11 @@ export interface ActivityView {
   day: string;
   time: string;
   duration: string;
-  cost: number; // Naira
+  cost: number; // Naira, per-head share
+  costMode?: "even" | "host_share" | "sponsored" | "byo";
+  totalCost?: number;
+  hostContribution?: number;
+  sponsorName?: string | null;
   min: number;
   max: number;
   crew: string[]; // person ids

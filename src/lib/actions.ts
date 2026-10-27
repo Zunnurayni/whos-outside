@@ -36,7 +36,11 @@ export async function createActivity(input: {
   category: string;
   venueName: string;
   startsAt: string; // ISO
-  cost: number;
+  cost: number; // computed per-head share
+  costMode?: "even" | "host_share" | "sponsored" | "byo";
+  totalCost?: number;
+  hostContribution?: number;
+  sponsorName?: string | null;
   maxParticipants: number;
   minParticipants: number;
   joinRule: string;
@@ -85,6 +89,10 @@ export async function createActivity(input: {
       category: input.category,
       starts_at: input.startsAt,
       estimated_cost_per_person: input.cost,
+      cost_mode: input.costMode ?? "even",
+      total_cost: input.totalCost ?? 0,
+      host_contribution: input.hostContribution ?? 0,
+      sponsor_name: input.sponsorName ?? null,
       min_participants: input.minParticipants,
       max_participants: input.maxParticipants,
       visibility,
@@ -104,7 +112,7 @@ export async function createActivity(input: {
 
   revalidatePath("/discover");
   revalidatePath("/map");
-  return { ok: true, message: "Plan posted — it's live on the map 👻", id: data?.id };
+  return { ok: true, message: "Plan posted. It's live on the map 👻", id: data?.id };
 }
 
 // ── Request to join ───────────────────────────────────────────────────────
