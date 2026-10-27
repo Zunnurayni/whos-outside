@@ -266,10 +266,18 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
   },
 ];
 
+// Events always read as upcoming: their dates are computed a set number of
+// days from now, so the demo never shows a past event however long it runs.
+function inDays(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
 export const SAMPLE_EVENTS: EventView[] = [
-  { id: "e1", emoji: "🎪", title: "Tech & Innovation Fair", org: "Tech Community", day: "Nov 2", venue: "City Square", interested: 84, category: "tech" },
-  { id: "e2", emoji: "🏆", title: "City Half Marathon", org: "Runners Club", day: "Nov 9", venue: "Bypass start line", interested: 210, category: "sports" },
-  { id: "e3", emoji: "🎶", title: "Riverside Live", org: "Culture Collective", day: "Nov 15", venue: "Riverbank arena", interested: 156, category: "music" },
+  { id: "e1", emoji: "🎪", title: "Tech & Innovation Fair", org: "Tech Community", day: inDays(6), venue: "City Square", interested: 84, category: "tech" },
+  { id: "e2", emoji: "🏆", title: "City Half Marathon", org: "Runners Club", day: inDays(13), venue: "Bypass start line", interested: 210, category: "sports" },
+  { id: "e3", emoji: "🎶", title: "Riverside Live", org: "Culture Collective", day: inDays(19), venue: "Riverbank arena", interested: 156, category: "music" },
 ];
 
 export const SAMPLE_CREWS: CrewView[] = [
