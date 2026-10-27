@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getActivity } from "@/lib/data/activities";
 import { getProfiles } from "@/lib/data/profiles";
@@ -6,6 +7,26 @@ import { ActivityDetailClient } from "./ActivityDetailClient";
 
 // Dynamic: join state and new activities must render per-request in live mode.
 export const dynamic = "force-dynamic";
+
+// Rich link preview: title/description per plan; the image comes from the
+// sibling opengraph-image.tsx. This is what Snap/WhatsApp/X show when shared.
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const a = await getActivity(params.id);
+  if (!a) return { title: "Plan not found — Who's Outside?" };
+
+  const title = `${a.title} · Who's Outside?`;
+  const description = `${a.day}, ${a.time} at ${a.venue}. Who's outside? Find out and join the crew.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, images: ["/og-default.png"], type: "website" },
+    twitter: { card: "summary_large_image", title, description, images: ["/og-default.png"] },
+  };
+}
 
 export default async function ActivityPage({ params }: { params: { id: string } }) {
   const activity = await getActivity(params.id);

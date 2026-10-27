@@ -8,7 +8,10 @@ import "./globals.css";
 // so a restricted build network never blocks compilation. The CSS variables
 // --font-body / --font-display are defined in globals.css with real fallbacks.
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://whos-outside.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Who's Outside?",
   description: "Who's outside? Find out. Find your people, form a crew, and actually go out.",
   manifest: "/manifest.json",
@@ -16,6 +19,18 @@ export const metadata: Metadata = {
     capable: true,
     title: "Who's Outside?",
     statusBarStyle: "black-translucent",
+  },
+  openGraph: {
+    title: "Who's Outside?",
+    description: "Find your people. Form a crew. Actually go out.",
+    images: ["/og-default.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Who's Outside?",
+    description: "Find your people. Form a crew. Actually go out.",
+    images: ["/og-default.png"],
   },
 };
 
