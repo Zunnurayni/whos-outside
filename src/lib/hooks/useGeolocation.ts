@@ -7,6 +7,8 @@ interface GeoState {
   lng: number | null;
   loading: boolean;
   error: string | null;
+  /** true only after a real GPS fix (not the default centre) */
+  hasFix: boolean;
   /** manual city fallback when the user declines GPS */
   city: string;
 }
@@ -25,6 +27,7 @@ export function useGeolocation() {
     lng: DEFAULT_CENTER.lng,
     loading: false,
     error: null,
+    hasFix: false,
     city: "Near you",
   });
 
@@ -41,6 +44,7 @@ export function useGeolocation() {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
           loading: false,
+          hasFix: true,
         })),
       (err) =>
         setState((s) => ({

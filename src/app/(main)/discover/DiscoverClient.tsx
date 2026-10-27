@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, MapPin, Plus, Flame, Calendar, Check, Compass } from "lucide-react";
 import type { ActivityView, EventView } from "@/lib/types";
@@ -13,6 +13,10 @@ import { CategoryChips } from "@/components/activity/CategoryChips";
 import { OutsidePulseBar } from "@/components/activity/OutsidePulseBar";
 import { AvatarStack } from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
+import { useGeolocation } from "@/lib/hooks/useGeolocation";
+import { partitionByRadius, distanceKm } from "@/lib/rank";
+
+const RADIUS_KM = 10;
 
 type VibeFilter = "all" | "tonight" | "free" | "urgent";
 
@@ -22,24 +26,37 @@ export function DiscoverClient({
   currentUserId = "me",
   personalised = false,
   unreadCount = 0,
+  live = false,
 }: {
   activities: ActivityView[];
   events: EventView[];
   currentUserId?: string;
   personalised?: boolean;
   unreadCount?: number;
+  live?: boolean;
 }) {
   const { show } = useToast();
   const [cat, setCat] = useState<string>("all");
   const [vibe, setVibe] = useState<VibeFilter>("all");
   const [interestedEvents, setInterestedEvents] = useState<Record<string, boolean>>({});
 
+  // Ask for location once on open so the feed can centre on where you are.
+  const geo = useGeolocation();
+  useEffect(() => {
+    geo.request();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const located = geo.hasFix;
+  const userLngLat: [number, number] | null =
+    located && geo.lng != null && geo.lat != null ? [geo.lng, geo.lat] : null;
+
   // Spotlight = the top-ranked plan (a1 in demo mode, best-for-you when live)
   const feat = activities.find((a) => a.id === "a1") ?? activities[0];
   const featHost = feat ? personById(feat.hostId) : null;
 
-  // Filter activities
-  const filteredList = activities.filter((a) => {
+  // Filter by the active category + vibe chips first.
+  const chipFiltered = activities.filter((a) => {
     const matchesCat = cat === "all" || a.category === cat;
     if (!matchesCat) return false;
 
@@ -49,6 +66,17 @@ export function DiscoverClient({
 
     return true;
   });
+
+  // Then split by distance. `near` = within radius (nearest first); `far` =
+  // everything else, used as the "top plans anywhere" fallback. In demo mode
+  // (no live backend) we don't radius-filter, so the sample plans always show
+  // wherever the viewer is; the real filter kicks in once plans are live.
+  const radiusOrigin = live ? userLngLat : null;
+  const { near, far } = partitionByRadius(chipFiltered, radiusOrigin, RADIUS_KM);
+  // What the list actually shows: nearby plans when there are any, otherwise
+  // we fall back to the wider set so the screen is never needlessly empty.
+  const showingFallback = radiusOrigin != null && near.length === 0 && far.length > 0;
+  const filteredList = near.length > 0 ? near : far;
 
   const toggleInterest = (id: string, title: string) => {
     setInterestedEvents((prev) => {
@@ -88,10 +116,10 @@ export function DiscoverClient({
         <div className="mt-2.5 flex items-center gap-2 text-[0.78rem] text-fg-soft">
           <span className="flex items-center gap-1 font-semibold text-fg">
             <MapPin className="h-3.5 w-3.5 text-violet" />
-            Near you
+            {located ? "Your location" : geo.loading ? "Finding you…" : "Near you"}
           </span>
           <span aria-hidden="true">·</span>
-          <span>10km radius</span>
+          <span>{located ? `Within ${RADIUS_KM}km` : `${RADIUS_KM}km radius`}</span>
           <span aria-hidden="true">·</span>
           <Link href="/map" className="font-semibold text-violet hover:underline">
             View radar →
@@ -241,21 +269,37 @@ export function DiscoverClient({
             {filteredList.length} active
           </span>
         </div>
-        {personalised && cat === "all" && vibe === "all" && (
+        {personalised && cat === "all" && vibe === "all" && !showingFallback && (
           <p className="-mt-2 mb-3 text-xs text-fg-soft">
             Ranked by your interests, how soon they start, and distance.
           </p>
         )}
 
+        {/* Fallback banner: nothing within radius, so we show the wider set */}
+        {showingFallback && (
+          <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-violet/30 bg-violet/5 px-3.5 py-3">
+            <Compass className="mt-0.5 h-4 w-4 shrink-0 text-violet" />
+            <p className="text-[0.82rem] text-fg-soft">
+              <span className="font-semibold text-fg">Nothing within {RADIUS_KM}km yet.</span>{" "}
+              Showing top plans further out.{" "}
+              <Link href="/create" className="font-semibold text-violet hover:underline">
+                Start one near you →
+              </Link>
+            </p>
+          </div>
+        )}
+
         {/* Activities List */}
         {filteredList.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line bg-surface p-8 text-center">
-            <span className="text-4xl">⚡</span>
+            <span className="text-4xl">📍</span>
             <h3 className="mt-3 font-display text-base font-bold text-fg">
-              No plans matching this vibe yet
+              {located ? "Nobody's outside near you yet" : "No plans matching this vibe yet"}
             </h3>
-            <p className="mt-1 max-w-[26ch] text-xs text-fg-soft">
-              Be the first to start the wave right now!
+            <p className="mt-1 max-w-[28ch] text-xs text-fg-soft">
+              {located
+                ? "Be the one who gets people out. Drop a plan and your crew pulls up."
+                : "Be the first to start the wave right now!"}
             </p>
             <Link
               href="/create"
@@ -267,9 +311,20 @@ export function DiscoverClient({
           </div>
         ) : (
           <div className="flex flex-col gap-3.5">
-            {filteredList.map((a) => (
-              <ActivityCard key={a.id} activity={a} joined={a.crew.includes(currentUserId)} />
-            ))}
+            {filteredList.map((a) => {
+              const dist =
+                userLngLat && a.lng != null && a.lat != null
+                  ? distanceKm(userLngLat, [a.lng, a.lat])
+                  : null;
+              return (
+                <ActivityCard
+                  key={a.id}
+                  activity={a}
+                  joined={a.crew.includes(currentUserId)}
+                  distanceKm={dist}
+                />
+              );
+            })}
           </div>
         )}
 

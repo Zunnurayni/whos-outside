@@ -8,10 +8,19 @@ import { Avatar, AvatarStack } from "@/components/ui/Avatar";
 export function ActivityCard({
   activity: a,
   joined = false,
+  distanceKm,
 }: {
   activity: ActivityView;
   joined?: boolean;
+  /** when the viewer's location is known, how far this plan is, in km */
+  distanceKm?: number | null;
 }) {
+  const distLabel =
+    distanceKm == null || !isFinite(distanceKm)
+      ? null
+      : distanceKm < 1
+        ? `${Math.round(distanceKm * 1000)}m away`
+        : `${distanceKm.toFixed(1)}km away`;
   // Prefer the real host name (live DB); fall back to the sample people map
   // for demo mode, then to a friendly default.
   const hostName = a.hostName ?? personById(a.hostId).name;
@@ -78,6 +87,12 @@ export function ActivityCard({
               <MapPin className="h-3.5 w-3.5 text-violet shrink-0" />
               <strong className="font-semibold">{a.venue}</strong>
             </span>
+            {distLabel && (
+              <>
+                <span aria-hidden="true" className="text-line">·</span>
+                <span className="font-semibold text-violet">{distLabel}</span>
+              </>
+            )}
             <span aria-hidden="true" className="text-line">·</span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 shrink-0" />

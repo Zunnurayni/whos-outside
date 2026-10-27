@@ -1,4 +1,4 @@
-import { getActivities, getEvents } from "@/lib/data/activities";
+import { getActivities, getEvents, isLiveMode } from "@/lib/data/activities";
 import { getCurrentUser } from "@/lib/auth";
 import { getMyInterests } from "@/lib/data/profiles";
 import { getUnreadCount } from "@/lib/data/notifications";
@@ -28,6 +28,7 @@ export default async function DiscoverPage() {
       currentUserId={me?.id ?? "me"}
       personalised={personalised}
       unreadCount={unread}
+      live={isLiveMode()}
     />
   );
 }
