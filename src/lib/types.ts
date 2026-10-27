@@ -27,6 +27,8 @@ export interface Person {
   vibe?: string;
   currentSpot?: string;
   isOutside?: boolean;
+  /** Bitmoji avatar URL when the person has linked Snapchat; else undefined */
+  bitmojiUrl?: string;
 }
 
 export interface ActivityView {

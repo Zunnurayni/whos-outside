@@ -20,13 +20,19 @@ function colorFor(id: string): string {
   return PALETTE[h % PALETTE.length];
 }
 
-export function rowToPerson(row: { id: string; display_name: string; handle: string | null }): Person {
+export function rowToPerson(row: {
+  id: string;
+  display_name: string;
+  handle: string | null;
+  bitmoji_avatar_url?: string | null;
+}): Person {
   return {
     id: row.id,
     name: row.display_name,
     handle: row.handle ? `@${row.handle}` : undefined,
     initials: initials(row.display_name),
     color: colorFor(row.id),
+    bitmojiUrl: row.bitmoji_avatar_url ?? undefined,
   };
 }
 
@@ -41,7 +47,7 @@ export async function getProfiles(ids: string[]): Promise<Record<string, Person>
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, display_name, handle")
+    .select("id, display_name, handle, bitmoji_avatar_url")
     .in("id", unique);
 
   const out: Record<string, Person> = {};

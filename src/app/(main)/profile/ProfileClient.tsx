@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Sparkles, MapPin, Award, ShieldCheck, Flame, Zap, Share2, Check } from "lucide-react";
 import { ME } from "@/lib/data/sample";
 import { CATEGORIES } from "@/lib/categories";
@@ -32,23 +32,42 @@ export function ProfileClient({
   displayName = ME.name,
   handle = ME.handle ?? "@Nurain_Dev",
   initialInterests = [],
+  snapLinked = false,
+  snapEnabled = false,
 }: {
   live?: boolean;
   displayName?: string;
   handle?: string;
   initialInterests?: string[];
+  snapLinked?: boolean;
+  snapEnabled?: boolean;
 }) {
   const { show } = useToast();
-  const [snapConnected, setSnapConnected] = useState(false);
+  const snapConnected = snapLinked;
 
-  const toggleSnap = () => {
-    setSnapConnected((prev) => !prev);
-    show(
-      snapConnected
-        ? "Snapchat disconnected"
-        : "Snapchat connected! Bitmoji & 1-tap share enabled 👻",
-      "👻"
-    );
+  // Show the result of the Snap OAuth round-trip (?snap=linked|error|...).
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get("snap");
+    if (!s) return;
+    const msg: Record<string, string> = {
+      linked: "Snapchat linked! Your Bitmoji is now your avatar. 👻",
+      error: "Couldn't link Snapchat. Please try again.",
+      unavailable: "Snapchat sign-in isn't set up yet.",
+      signin: "Sign in first, then link Snapchat.",
+    };
+    if (msg[s]) show(msg[s], "👻");
+    // clean the query so the toast doesn't repeat on refresh
+    window.history.replaceState(null, "", "/profile");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const onConnectSnap = () => {
+    if (!snapEnabled) {
+      show("Snapchat sign-in is coming soon. 👻", "👻");
+      return;
+    }
+    // Hand off to the OAuth start route, which redirects to Snapchat.
+    window.location.href = "/auth/snap/start";
   };
 
   return (
@@ -91,7 +110,8 @@ export function ProfileClient({
               Edit Vibe
             </button>
             <button
-              onClick={toggleSnap}
+              onClick={onConnectSnap}
+              disabled={snapConnected}
               className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all active:scale-95 ${
                 snapConnected
                   ? "bg-accent text-accent-ink shadow-sm"

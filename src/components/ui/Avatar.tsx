@@ -14,18 +14,30 @@ export function Avatar({
   const p = personById(personId);
   return (
     <div className={`relative inline-flex flex-none items-center justify-center ${className}`}>
-      <div
-        style={{
-          width: size,
-          height: size,
-          fontSize: Math.max(11, Math.round(size * 0.38)),
-          background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 65%, #000))`,
-        }}
-        className="grid place-items-center rounded-full font-display font-bold text-white shadow-sm ring-1 ring-white/20 transition-transform active:scale-95"
-        aria-label={p.name}
-      >
-        {p.initials}
-      </div>
+      {p.bitmojiUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={p.bitmojiUrl}
+          alt={p.name}
+          width={size}
+          height={size}
+          style={{ width: size, height: size }}
+          className="rounded-full bg-surface-2 object-cover shadow-sm ring-1 ring-white/20"
+        />
+      ) : (
+        <div
+          style={{
+            width: size,
+            height: size,
+            fontSize: Math.max(11, Math.round(size * 0.38)),
+            background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 65%, #000))`,
+          }}
+          className="grid place-items-center rounded-full font-display font-bold text-white shadow-sm ring-1 ring-white/20 transition-transform active:scale-95"
+          aria-label={p.name}
+        >
+          {p.initials}
+        </div>
+      )}
       {showStatus && p.isOutside && (
         <span
           className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-good"

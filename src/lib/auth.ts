@@ -19,7 +19,7 @@ export async function getCurrentUser(): Promise<Person | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name, handle")
+    .select("id, display_name, handle, bitmoji_avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 

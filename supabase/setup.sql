@@ -564,3 +564,20 @@ comment on column public.activities.total_cost is 'Whole cost of the plan in Nai
 comment on column public.activities.host_contribution is 'Naira the host puts in (host_share mode).';
 comment on column public.activities.estimated_cost_per_person is
   'Computed per-head share in Naira. Set at create time from the cost model so existing reads stay correct.';
+
+
+-- ============================================================
+-- 0005 city optional (appended)
+-- ============================================================
+-- ============================================================
+-- Who's Outside? — make city optional and location-neutral
+-- The app is worldwide, so we no longer default anyone's city to a
+-- single place. City becomes nullable with no default; it's set from
+-- geocoding or left blank. Idempotent.
+-- ============================================================
+
+alter table public.profiles alter column city drop not null;
+alter table public.profiles alter column city drop default;
+
+alter table public.venues alter column city drop not null;
+alter table public.venues alter column city drop default;
