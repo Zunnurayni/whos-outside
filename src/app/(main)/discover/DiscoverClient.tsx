@@ -21,11 +21,13 @@ export function DiscoverClient({
   events,
   currentUserId = "me",
   personalised = false,
+  unreadCount = 0,
 }: {
   activities: ActivityView[];
   events: EventView[];
   currentUserId?: string;
   personalised?: boolean;
+  unreadCount?: number;
 }) {
   const { show } = useToast();
   const [cat, setCat] = useState<string>("all");
@@ -60,7 +62,7 @@ export function DiscoverClient({
 
   return (
     <>
-      <TopBar variant="home" />
+      <TopBar variant="home" unreadCount={unreadCount} />
 
       {/* Hero Greeting & Quick Action */}
       <Pad className="pt-4 pb-2">

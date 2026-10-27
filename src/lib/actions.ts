@@ -216,3 +216,24 @@ export async function saveInterests(categories: string[]): Promise<ActionResult>
   revalidatePath("/discover");
   return { ok: true, message: "Interests saved ✨" };
 }
+
+// ── Notifications ──────────────────────────────────────────────────────────
+export async function markNotificationsRead(): Promise<ActionResult> {
+  const supabase = createClient();
+  if (!supabase) return noBackend();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, message: "Please sign in." };
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("recipient_id", user.id)
+    .is("read_at", null);
+
+  if (error) return { ok: false, message: error.message };
+  revalidatePath("/notifications");
+  return { ok: true, message: "" };
+}

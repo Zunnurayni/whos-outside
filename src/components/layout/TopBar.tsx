@@ -12,9 +12,10 @@ interface Props {
   title?: string;
   subtitle?: string;
   onShare?: () => void;
+  unreadCount?: number;
 }
 
-export function TopBar({ variant = "title", title = "", subtitle, onShare }: Props) {
+export function TopBar({ variant = "title", title = "", subtitle, onShare, unreadCount = 0 }: Props) {
   const router = useRouter();
   const { show } = useToast();
 
@@ -77,14 +78,18 @@ export function TopBar({ variant = "title", title = "", subtitle, onShare }: Pro
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button
-              onClick={() => show("3 new: 1 join request, 2 plans filling up fast", "🔔")}
-              aria-label="Notifications"
+            <Link
+              href="/notifications"
+              aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
               className="relative grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-fg transition-transform active:scale-90"
             >
               <Bell className="h-4 w-4 stroke-[2]" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-crit ring-2 ring-surface" />
-            </button>
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-crit px-1 text-[0.62rem] font-bold text-white ring-2 ring-surface">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
           </div>
         </>
       ) : (
