@@ -11,21 +11,21 @@ interface GeoState {
   city: string;
 }
 
-// Yola city centre, used as the default map centre.
-const YOLA = { lat: 9.2035, lng: 12.4954 };
+// Default map centre used before the browser returns a GPS fix.
+const DEFAULT_CENTER = { lat: 9.2035, lng: 12.4954 };
 
 /**
- * Browser geolocation with a manual city fallback, per the spec's privacy
- * stance: GPS is never required. If the user declines, we keep their chosen
- * city and the default Yola centre.
+ * Browser geolocation with a manual fallback, per the spec's privacy stance:
+ * GPS is never required. If the user declines, we keep the default centre
+ * until they share a location or pick a venue.
  */
 export function useGeolocation() {
   const [state, setState] = useState<GeoState>({
-    lat: YOLA.lat,
-    lng: YOLA.lng,
+    lat: DEFAULT_CENTER.lat,
+    lng: DEFAULT_CENTER.lng,
     loading: false,
     error: null,
-    city: "Yola",
+    city: "Near you",
   });
 
   const request = useCallback(() => {

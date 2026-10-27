@@ -71,7 +71,7 @@ export function TopBar({ variant = "title", title = "", subtitle, onShare, unrea
                 Who&apos;s Outside?
               </span>
               <span className="mt-0.5 text-[0.68rem] font-semibold text-violet">
-                Yola Pulse · 14 outside
+                14 outside right now
               </span>
             </div>
           </Link>

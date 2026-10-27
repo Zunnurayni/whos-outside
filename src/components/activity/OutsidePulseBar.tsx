@@ -32,7 +32,7 @@ export function OutsidePulseBar() {
           </span>
         </div>
         <span className="text-[0.72rem] font-medium text-fg-soft">
-          {outsidePeople.length} in Yola
+          {outsidePeople.length} outside now
         </span>
       </div>
 
@@ -100,7 +100,7 @@ export function OutsidePulseBar() {
                 <Sparkles className="h-3.5 w-3.5" /> Current Vibe
               </div>
               <div className="mt-1 text-[0.95rem] font-semibold text-fg">
-                {selectedPerson.vibe || "Out and exploring Yola!"}
+                {selectedPerson.vibe || "Out and exploring!"}
               </div>
               {selectedPerson.currentSpot && (
                 <div className="mt-2 flex items-center gap-1.5 text-[0.78rem] text-fg-soft">

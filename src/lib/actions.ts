@@ -59,18 +59,18 @@ export async function createActivity(input: {
   // Upsert the venue (public place) so the activity can link to it.
   let venueId: string | null = null;
   if (input.venueName.trim()) {
-    // Use geocoded coordinates when the venue search provided them; otherwise
-    // Yola centre so the pin still lands in the right city.
-    const lng = input.lng ?? 12.4954;
-    const lat = input.lat ?? 9.2035;
+    // Use geocoded coordinates when the venue search provided them. Without a
+    // pin we store no coordinates rather than guessing a city.
+    const lng = input.lng ?? null;
+    const lat = input.lat ?? null;
     const { data: venue } = await supabase
       .from("venues")
       .insert({
         name: input.venueName.trim(),
         category: input.category,
         address: input.venueName.trim(),
-        city: "Yola",
-        location: `POINT(${lng} ${lat})`,
+        city: null,
+        location: lng != null && lat != null ? `POINT(${lng} ${lat})` : null,
       })
       .select("id")
       .single();

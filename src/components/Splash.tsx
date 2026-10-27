@@ -58,7 +58,7 @@ export function Splash() {
       </div>
 
       <p className="absolute bottom-10 text-[0.7rem] font-semibold tracking-wide text-[#7d7465] wo-rise wo-rise-4">
-        made in Yola · Adamawa
+        find your people
       </p>
     </div>
   );

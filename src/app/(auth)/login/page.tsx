@@ -26,7 +26,7 @@ export default function LoginPage() {
           Find out.
         </p>
         <p className="mt-4 max-w-[30ch] text-[1.02rem] text-fg-soft wo-rise wo-rise-4">
-          See what&apos;s on in Yola, find your crew, and show up.
+          See what&apos;s happening, find your crew, and show up.
         </p>
       </div>
 

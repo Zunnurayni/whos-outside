@@ -49,7 +49,7 @@ export function MapClient({
       <TopBar
         variant="title"
         title="Social Radar"
-        subtitle={useReal ? "Yola & Jimeta live map" : "Yola & Jimeta live pins"}
+        subtitle={useReal ? "Live map near you" : "Live pins near you"}
       />
       <div
         className="relative"

@@ -1,7 +1,7 @@
 import type { ActivityView, EventView, CrewView, Person } from "@/lib/types";
 
 /**
- * Sample Yola / Adamawa data. Used whenever Supabase env vars are not set,
+ * Sample demo data. Used whenever Supabase env vars are not set,
  * so the app is fully navigable with no backend (Phase 1 of the build guide).
  * Clearly fictional people; real neighbourhood names and Naira pricing.
  */
@@ -13,8 +13,8 @@ export const ME: Person = {
   initials: "NA",
   color: "#6c4cf0",
   interests: ["Tech", "Food", "Football", "Photography", "Music", "Hiking"],
-  vibe: "Building community & hunting good suya",
-  currentSpot: "Jimeta Modern Market",
+  vibe: "Building community & always down to link up",
+  currentSpot: "Out and about",
   isOutside: true,
 };
 
@@ -28,7 +28,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#e0668a",
     interests: ["Food", "Photography"],
     vibe: "Suya connoisseur 🍢",
-    currentSpot: "Jimeta Market",
+    currentSpot: "The market",
     isOutside: true,
   },
   ibrahim: {
@@ -39,7 +39,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#2f9e6f",
     interests: ["Football", "Gaming"],
     vibe: "Looking for 5-a-side baller ⚽",
-    currentSpot: "Pologround Turf",
+    currentSpot: "The football pitch",
     isOutside: true,
   },
   aisha: {
@@ -49,8 +49,8 @@ export const PEOPLE: Record<string, Person> = {
     initials: "AM",
     color: "#d9802b",
     interests: ["Arts", "Music"],
-    vibe: "Sketching by Benue River 🎨",
-    currentSpot: "Arts Council",
+    vibe: "Sketching outdoors 🎨",
+    currentSpot: "The arts space",
     isOutside: false,
   },
   yusuf: {
@@ -61,7 +61,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#4b7bd4",
     interests: ["Tech", "Hiking"],
     vibe: "Hacking on open-source 💻",
-    currentSpot: "BCH Hub Yola",
+    currentSpot: "The hub",
     isOutside: true,
   },
   zainab: {
@@ -72,7 +72,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#8b5cf0",
     interests: ["Food", "Music"],
     vibe: "Got aux on rooftop 🎧",
-    currentSpot: "Jimeta Rooftop",
+    currentSpot: "A rooftop spot",
     isOutside: true,
   },
   musa: {
@@ -83,7 +83,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#c0583f",
     interests: ["Football", "Fitness"],
     vibe: "Pulling up for 5-a-side 🏃",
-    currentSpot: "Pologround",
+    currentSpot: "The pitch",
     isOutside: true,
   },
   hauwa: {
@@ -94,7 +94,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#1f9d8b",
     interests: ["Photography", "Travel"],
     vibe: "Golden hour camera walk 📸",
-    currentSpot: "River Benue bank",
+    currentSpot: "The riverside",
     isOutside: true,
   },
   sadiq: {
@@ -105,7 +105,7 @@ export const PEOPLE: Record<string, Person> = {
     color: "#9a7b2e",
     interests: ["Tech", "Gaming"],
     vibe: "Setting up testnet nodes ⚡",
-    currentSpot: "BCH Hub",
+    currentSpot: "The hub",
     isOutside: false,
   },
 };
@@ -115,10 +115,10 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     id: "a1",
     emoji: "🍢",
     category: "food",
-    title: "Suya & shawarma run at Jimeta",
-    venue: "Jimeta Modern Market strip",
-    area: "Jimeta",
-    city: "Yola",
+    title: "Street food & shawarma run",
+    venue: "Downtown food strip",
+    area: "Downtown",
+    city: "Your city",
     hostId: "fatima",
     day: "Today",
     time: "7:30 PM",
@@ -143,10 +143,10 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     id: "a2",
     emoji: "⚽",
     category: "sports",
-    title: "5-a-side at Pologround pitch",
-    venue: "Pologround Astro Turf",
-    area: "Yola Town",
-    city: "Yola",
+    title: "5-a-side at the local pitch",
+    venue: "Astro turf pitch",
+    area: "Town centre",
+    city: "Your city",
     hostId: "ibrahim",
     day: "Today",
     time: "5:00 PM",
@@ -168,10 +168,10 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     id: "a3",
     emoji: "🌅",
     category: "outdoors",
-    title: "Sunset walk along River Benue",
-    venue: "Benue riverbank, Jimeta",
-    area: "Jimeta",
-    city: "Yola",
+    title: "Sunset riverside walk",
+    venue: "The riverbank",
+    area: "Downtown",
+    city: "Your city",
     hostId: "hauwa",
     day: "Saturday",
     time: "5:30 PM",
@@ -194,9 +194,9 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     emoji: "💻",
     category: "tech",
     title: "Bitcoin Cash dev meetup",
-    venue: "BCH Hub Yola",
-    area: "Yola Bypass",
-    city: "Yola",
+    venue: "The hub",
+    area: "Bypass area",
+    city: "Your city",
     hostId: "me",
     day: "Sunday",
     time: "2:00 PM",
@@ -219,9 +219,9 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     emoji: "🎨",
     category: "arts",
     title: "Life drawing & chill at the gallery",
-    venue: "Adamawa Arts Council",
-    area: "Yola Town",
-    city: "Yola",
+    venue: "Arts Council",
+    area: "Town centre",
+    city: "Your city",
     hostId: "aisha",
     day: "Saturday",
     time: "11:00 AM",
@@ -244,9 +244,9 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
     emoji: "🎧",
     category: "music",
     title: "Afrobeats listening night",
-    venue: "Rooftop, Jimeta",
-    area: "Jimeta",
-    city: "Yola",
+    venue: "Downtown rooftop",
+    area: "Downtown",
+    city: "Your city",
     hostId: "zainab",
     day: "Friday",
     time: "8:00 PM",
@@ -267,9 +267,9 @@ export const SAMPLE_ACTIVITIES: ActivityView[] = [
 ];
 
 export const SAMPLE_EVENTS: EventView[] = [
-  { id: "e1", emoji: "🎪", title: "Adamawa Tech & Innovation Fair", org: "3MTT Adamawa", day: "Nov 2", venue: "Yola IBB Square", interested: 84, category: "tech" },
-  { id: "e2", emoji: "🏆", title: "Jimeta Half Marathon", org: "Yola Runners Club", day: "Nov 9", venue: "Jimeta Bypass start", interested: 210, category: "sports" },
-  { id: "e3", emoji: "🎶", title: "Benue Riverside Live", org: "Adamawa Culture", day: "Nov 15", venue: "Riverbank arena", interested: 156, category: "music" },
+  { id: "e1", emoji: "🎪", title: "Tech & Innovation Fair", org: "Tech Community", day: "Nov 2", venue: "City Square", interested: 84, category: "tech" },
+  { id: "e2", emoji: "🏆", title: "City Half Marathon", org: "Runners Club", day: "Nov 9", venue: "Bypass start line", interested: 210, category: "sports" },
+  { id: "e3", emoji: "🎶", title: "Riverside Live", org: "Culture Collective", day: "Nov 15", venue: "Riverbank arena", interested: 156, category: "music" },
 ];
 
 export const SAMPLE_CREWS: CrewView[] = [

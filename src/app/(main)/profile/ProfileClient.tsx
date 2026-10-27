@@ -14,17 +14,17 @@ const BADGES = [
   { e: "🎉", l: "First Outing", on: true, desc: "Broke the ice" },
   { e: "🔥", l: "5 Plans Hosted", on: true, desc: "Community anchor" },
   { e: "🛡️", l: "100% Show-up", on: true, desc: "Never flaked once" },
-  { e: "🍢", l: "Suya Master", on: true, desc: "Knows Jimeta market" },
+  { e: "🍢", l: "Foodie", on: true, desc: "Knows the good spots" },
   { e: "🌙", l: "Night Owl", on: true, desc: "Late rooftop regular" },
   { e: "🤝", l: "Connector", on: false, desc: "Meet 50+ people" },
   { e: "📸", l: "Storyteller", on: false, desc: "Shared on Snapchat" },
-  { e: "🗺️", l: "Yola Explorer", on: false, desc: "Visited all zones" },
+  { e: "🗺️", l: "Explorer", on: false, desc: "Visited every zone" },
 ];
 
 const PAST = [
-  { e: "🍢", t: "Suya night at Jimeta Market", s: "2 weeks ago · 5 people", r: "⭐ 5.0" },
-  { e: "⚽", t: "5-a-side at Pologround Astro", s: "Last month · 8 people", r: "⭐ 4.9" },
-  { e: "💻", t: "BCH Hub open build session", s: "Last month · 11 people", r: "⭐ 5.0" },
+  { e: "🍢", t: "Street food night out", s: "2 weeks ago · 5 people", r: "⭐ 5.0" },
+  { e: "⚽", t: "5-a-side pickup football", s: "Last month · 8 people", r: "⭐ 4.9" },
+  { e: "💻", t: "Open build & coffee session", s: "Last month · 11 people", r: "⭐ 5.0" },
 ];
 
 export function ProfileClient({
@@ -75,12 +75,12 @@ export function ProfileClient({
             <span>{handle}</span>
             <span aria-hidden="true">·</span>
             <span className="flex items-center gap-0.5">
-              <MapPin className="h-3 w-3 text-violet" /> Yola, Adamawa
+              <MapPin className="h-3 w-3 text-violet" /> Outside right now
             </span>
           </div>
 
           <p className="mt-2.5 max-w-[32ch] text-[0.88rem] leading-relaxed text-fg-soft">
-            {ME.vibe} · Dev meetups, weekend football, and sunset walks along the Benue.
+            {ME.vibe} · Meetups, weekend football, and sunset walks.
           </p>
 
           <div className="mt-4 flex gap-2">
@@ -176,7 +176,7 @@ export function ProfileClient({
         {/* Past Memories */}
         <div className="mt-6">
           <div className="mb-2.5">
-            <h2 className="font-display text-[1.05rem] font-bold text-fg">Past Outings in Yola</h2>
+            <h2 className="font-display text-[1.05rem] font-bold text-fg">Past Outings</h2>
           </div>
           <div className="flex flex-col gap-2.5">
             {PAST.map((p) => (

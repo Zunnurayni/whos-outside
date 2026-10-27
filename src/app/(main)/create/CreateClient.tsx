@@ -12,11 +12,11 @@ import { createActivity } from "@/lib/actions";
 import { computeCost, type CostMode } from "@/lib/cost";
 
 const PRESETS = [
-  { emoji: "🍢", title: "Suya run at Jimeta Market", cat: "food", cost: 3000, size: 5 },
+  { emoji: "🍢", title: "Street food run", cat: "food", cost: 3000, size: 5 },
   { emoji: "⚽", title: "Casual 5-a-side soccer", cat: "sports", cost: 1000, size: 8 },
-  { emoji: "🌅", title: "Sunset walk by River Benue", cat: "outdoors", cost: 0, size: 6 },
+  { emoji: "🌅", title: "Sunset walk", cat: "outdoors", cost: 0, size: 6 },
   { emoji: "🎧", title: "Rooftop aux & chill beats", cat: "music", cost: 1500, size: 6 },
-  { emoji: "💻", title: "BCH Hub build & coffee", cat: "tech", cost: 0, size: 8 },
+  { emoji: "💻", title: "Build & coffee session", cat: "tech", cost: 0, size: 8 },
 ];
 
 // Turn the "Today / Tomorrow / weekend" select + a time string into an ISO date.
@@ -140,7 +140,7 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
             Who wants to pull up? 👻
           </h1>
           <p className="mt-1 text-[0.88rem] text-fg-soft">
-            Drop an activity in Yola. People nearby request to join.
+            Drop an activity. People nearby request to join.
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export function CreateClient({ mapboxToken = "" }: { mapboxToken?: string }) {
           <input
             id="c-title"
             className={inputClass}
-            placeholder="e.g. Suya run at Jimeta market"
+            placeholder="e.g. Street food run downtown"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />

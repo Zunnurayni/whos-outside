@@ -72,7 +72,7 @@ export function DiscoverClient({
               Who&apos;s outside? 👻
             </h1>
             <p className="mt-1 text-[0.88rem] text-fg-soft">
-              Find your crowd in Yola. Connect in real life.
+              Find your crowd. Connect in real life.
             </p>
           </div>
           <Link
@@ -88,7 +88,7 @@ export function DiscoverClient({
         <div className="mt-2.5 flex items-center gap-2 text-[0.78rem] text-fg-soft">
           <span className="flex items-center gap-1 font-semibold text-fg">
             <MapPin className="h-3.5 w-3.5 text-violet" />
-            Jimeta & Yola Town
+            Near you
           </span>
           <span aria-hidden="true">·</span>
           <span>10km radius</span>
@@ -255,7 +255,7 @@ export function DiscoverClient({
               No plans matching this vibe yet
             </h3>
             <p className="mt-1 max-w-[26ch] text-xs text-fg-soft">
-              Be the first to start the wave in Yola right now!
+              Be the first to start the wave right now!
             </p>
             <Link
               href="/create"
@@ -282,7 +282,7 @@ export function DiscoverClient({
                   Organised Events
                 </h2>
                 <p className="text-[0.76rem] text-fg-soft">
-                  Verified community meetups in Yola
+                  Verified community meetups near you
                 </p>
               </div>
               <Link href="/map" className="text-[0.82rem] font-bold text-violet hover:underline">
@@ -354,7 +354,7 @@ export function DiscoverClient({
 
         <div className="mt-8 mb-4 text-center">
           <p className="text-[0.74rem] text-fg-faint">
-            Real Yola & Jimeta community spots. Showing verified demo activities.
+            Showing sample plans. Real plans appear here once people start posting.
           </p>
         </div>
       </Pad>

@@ -92,7 +92,7 @@ export function CrewsClient({
             </h3>
             <p className="mt-1 max-w-[28ch] text-xs text-fg-soft">
               {tab === "active"
-                ? "Explore Yola plans or drop your own to gather a crew!"
+                ? "Explore plans or drop your own to gather a crew!"
                 : "When you request to join a plan, it appears here until approved."}
             </p>
             <Link
@@ -159,7 +159,7 @@ export function CrewsClient({
                       {isCheckedIn ? (
                         <div className="mt-3 flex items-center gap-2 rounded-lg bg-good/15 p-2.5 text-xs font-bold text-good">
                           <Check className="h-4 w-4" />
-                          <span>Locked in: Meet at Jimeta Market Main Gate, Table 4</span>
+                          <span>Locked in: meeting spot unlocked, check the plan</span>
                         </div>
                       ) : (
                         <button

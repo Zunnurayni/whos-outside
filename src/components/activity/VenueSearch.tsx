@@ -46,7 +46,7 @@ export function VenueSearch({
       <input
         id="c-venue"
         className={className}
-        placeholder={token ? "Search Yola venues…" : "Type the venue name…"}
+        placeholder={token ? "Search for a venue…" : "Type the venue name…"}
         value={value}
         autoComplete="off"
         onChange={(e) => {
